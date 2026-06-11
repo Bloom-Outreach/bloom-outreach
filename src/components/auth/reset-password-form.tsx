@@ -2,50 +2,71 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, KeyRound } from "lucide-react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { ArrowLeft, KeyRound, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { PasswordInput } from "@/components/auth/auth-fields";
+import {
+  resetPasswordSchema,
+  type ResetPasswordValues,
+} from "@/lib/validation";
 
 export function ResetPasswordForm() {
   const router = useRouter();
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<ResetPasswordValues>({
+    resolver: zodResolver(resetPasswordSchema),
+    mode: "onTouched",
+    defaultValues: { password: "", confirmPassword: "" },
+  });
+
+  const onSubmit = handleSubmit(async () => {
+    router.push("/sign-in");
+  });
 
   return (
     <Card className="border-border/50 p-6 shadow-lg shadow-primary/5 sm:p-8">
-      <form
-        className="space-y-5"
-        onSubmit={(e) => {
-          e.preventDefault();
-          const formData = new FormData(e.currentTarget);
-          const password = String(formData.get("password") ?? "");
-          const confirmPassword = String(formData.get("confirmPassword") ?? "");
-          if (password !== confirmPassword) return;
-          router.push("/sign-in");
-        }}
-      >
+      <form className="space-y-5" onSubmit={onSubmit} noValidate>
         <PasswordInput
           id="reset-password"
-          name="password"
           label="New Password"
           placeholder="At least 8 characters"
           autoComplete="new-password"
-          minLength={8}
-          required
+          error={errors.password?.message}
+          {...register("password")}
         />
 
         <PasswordInput
           id="reset-confirm-password"
-          name="confirmPassword"
           label="Confirm New Password"
           placeholder="Re-enter your new password"
           autoComplete="new-password"
-          minLength={8}
-          required
+          error={errors.confirmPassword?.message}
+          {...register("confirmPassword")}
         />
 
-        <Button type="submit" size="lg" className="h-12 w-full rounded-full text-base">
-          Reset Password
-          <KeyRound className="size-4" />
+        <Button
+          type="submit"
+          size="lg"
+          className="h-12 w-full rounded-full text-base"
+          disabled={isSubmitting}
+        >
+          {isSubmitting ? (
+            <>
+              Resetting...
+              <Loader2 className="size-4 animate-spin" />
+            </>
+          ) : (
+            <>
+              Reset Password
+              <KeyRound className="size-4" />
+            </>
+          )}
         </Button>
       </form>
 

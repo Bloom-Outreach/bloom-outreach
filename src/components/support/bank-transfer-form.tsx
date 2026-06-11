@@ -1,17 +1,25 @@
 "use client";
 
 import { useState } from "react";
+import { Controller, useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Building2,
   CheckCircle2,
   Copy,
+  Loader2,
   Send,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { FieldError } from "@/components/ui/field-error";
 import { AmountPicker } from "@/components/support/amount-picker";
 import { formatNaira, supportConfig } from "@/lib/support";
+import {
+  bankTransferSchema,
+  type BankTransferValues,
+} from "@/lib/validation";
 
 function CopyField({ label, value }: { label: string; value: string }) {
   const [copied, setCopied] = useState(false);
@@ -45,11 +53,34 @@ function CopyField({ label, value }: { label: string; value: string }) {
 }
 
 export function BankTransferForm() {
-  const [amount, setAmount] = useState<number>(supportConfig.presetAmounts[1]);
   const [customAmount, setCustomAmount] = useState("");
-  const [submitted, setSubmitted] = useState(false);
+  const [submitted, setSubmitted] = useState<{ amount: number } | null>(null);
+
+  const {
+    register,
+    control,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<BankTransferValues>({
+    resolver: zodResolver(bankTransferSchema),
+    mode: "onTouched",
+    defaultValues: {
+      firstName: "",
+      lastName: "",
+      email: "",
+      phone: "",
+      amount: supportConfig.presetAmounts[1],
+      reference: "",
+      note: "",
+    },
+  });
 
   const { bankName, accountName, accountNumber } = supportConfig.bankAccount;
+
+  const onSubmit = handleSubmit(async (values) => {
+    await new Promise((resolve) => setTimeout(resolve, 400));
+    setSubmitted({ amount: values.amount });
+  });
 
   return (
     <div className="space-y-5">
@@ -83,21 +114,15 @@ export function BankTransferForm() {
             Transfer details received
           </h3>
           <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-            Thank you for your planned gift of {formatNaira(amount)}. Please
-            complete the transfer to account number{" "}
+            Thank you for your planned gift of {formatNaira(submitted.amount)}.
+            Please complete the transfer to account number{" "}
             <span className="font-medium text-foreground">{accountNumber}</span>{" "}
             and use your name as the payment reference. We&apos;ll send a
             confirmation once we receive it.
           </p>
         </div>
       ) : (
-        <form
-          className="space-y-5"
-          onSubmit={(event) => {
-            event.preventDefault();
-            setSubmitted(true);
-          }}
-        >
+        <form className="space-y-5" onSubmit={onSubmit} noValidate>
           <div className="grid gap-5 sm:grid-cols-2">
             <div>
               <label htmlFor="bank-first-name" className="mb-2 block text-sm font-medium">
@@ -105,10 +130,12 @@ export function BankTransferForm() {
               </label>
               <Input
                 id="bank-first-name"
-                name="firstName"
+                autoComplete="given-name"
                 className="h-11 rounded-xl"
-                required
+                aria-invalid={Boolean(errors.firstName)}
+                {...register("firstName")}
               />
+              <FieldError message={errors.firstName?.message} />
             </div>
             <div>
               <label htmlFor="bank-last-name" className="mb-2 block text-sm font-medium">
@@ -116,10 +143,12 @@ export function BankTransferForm() {
               </label>
               <Input
                 id="bank-last-name"
-                name="lastName"
+                autoComplete="family-name"
                 className="h-11 rounded-xl"
-                required
+                aria-invalid={Boolean(errors.lastName)}
+                {...register("lastName")}
               />
+              <FieldError message={errors.lastName?.message} />
             </div>
           </div>
 
@@ -129,12 +158,14 @@ export function BankTransferForm() {
             </label>
             <Input
               id="bank-email"
-              name="email"
               type="email"
+              autoComplete="email"
               className="h-11 rounded-xl"
               placeholder="you@example.com"
-              required
+              aria-invalid={Boolean(errors.email)}
+              {...register("email")}
             />
+            <FieldError message={errors.email?.message} />
           </div>
 
           <div>
@@ -143,19 +174,33 @@ export function BankTransferForm() {
             </label>
             <Input
               id="bank-phone"
-              name="phone"
               type="tel"
+              autoComplete="tel"
               className="h-11 rounded-xl"
               placeholder="+234..."
+              aria-invalid={Boolean(errors.phone)}
+              {...register("phone")}
             />
+            <FieldError message={errors.phone?.message} />
           </div>
 
-          <AmountPicker
-            amount={amount}
-            onAmountChange={setAmount}
-            customAmount={customAmount}
-            onCustomAmountChange={setCustomAmount}
-          />
+          <div>
+            <Controller
+              control={control}
+              name="amount"
+              render={({ field, fieldState }) => (
+                <>
+                  <AmountPicker
+                    amount={field.value}
+                    onAmountChange={field.onChange}
+                    customAmount={customAmount}
+                    onCustomAmountChange={setCustomAmount}
+                  />
+                  <FieldError message={fieldState.error?.message} />
+                </>
+              )}
+            />
+          </div>
 
           <div>
             <label htmlFor="bank-reference" className="mb-2 block text-sm font-medium">
@@ -163,11 +208,12 @@ export function BankTransferForm() {
             </label>
             <Input
               id="bank-reference"
-              name="reference"
               className="h-11 rounded-xl"
               placeholder="Your full name (as it will appear on the transfer)"
-              required
+              aria-invalid={Boolean(errors.reference)}
+              {...register("reference")}
             />
+            <FieldError message={errors.reference?.message} />
           </div>
 
           <div>
@@ -176,15 +222,31 @@ export function BankTransferForm() {
             </label>
             <Textarea
               id="bank-note"
-              name="note"
               className="min-h-[88px] rounded-xl"
               placeholder="Monthly partner, cleanup supplies, gospel outreach..."
+              aria-invalid={Boolean(errors.note)}
+              {...register("note")}
             />
+            <FieldError message={errors.note?.message} />
           </div>
 
-          <Button type="submit" size="lg" className="h-12 w-full rounded-full text-base">
-            I&apos;ve Made a Transfer
-            <Send className="size-4" />
+          <Button
+            type="submit"
+            size="lg"
+            className="h-12 w-full rounded-full text-base"
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? (
+              <>
+                Submitting...
+                <Loader2 className="size-4 animate-spin" />
+              </>
+            ) : (
+              <>
+                I&apos;ve Made a Transfer
+                <Send className="size-4" />
+              </>
+            )}
           </Button>
         </form>
       )}

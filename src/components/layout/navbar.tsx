@@ -3,12 +3,18 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
-import { User } from "lucide-react";
+import {
+  ArrowRight,
+  Heart,
+  LogIn,
+  User,
+  X,
+} from "lucide-react";
 import { Logo } from "@/components/logo";
 import { AnimatedHamburger } from "@/components/layout/animated-hamburger";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
 import { Button } from "@/components/ui/button";
-import { navLinks } from "@/lib/constants";
+import { navLinks, siteConfig } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 
 export function Navbar() {
@@ -20,9 +26,13 @@ export function Navbar() {
   const closeMobile = useCallback(() => setMobileOpen(false), []);
   const useLightNav = isHome && !scrolled;
 
-  useEffect(() => {
-    closeMobile();
-  }, [pathname, closeMobile]);
+  // Auto-close the drawer when the route changes. Adjust state during render
+  // — see https://react.dev/learn/you-might-not-need-an-effect.
+  const [lastPath, setLastPath] = useState(pathname);
+  if (lastPath !== pathname) {
+    setLastPath(pathname);
+    if (mobileOpen) setMobileOpen(false);
+  }
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 24);
@@ -148,123 +158,168 @@ export function Navbar() {
         </div>
       </nav>
 
-      <div
+      {/* Scrim */}
+      <button
+        type="button"
+        aria-label="Close menu"
+        tabIndex={mobileOpen ? 0 : -1}
+        onClick={closeMobile}
         className={cn(
-          "fixed inset-0 z-40 bg-black/30 backdrop-blur-[2px] transition-opacity duration-300 md:hidden",
+          "fixed inset-0 z-40 bg-foreground/40 backdrop-blur-sm transition-opacity duration-300 ease-out md:hidden",
           mobileOpen ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-0"
         )}
-        onClick={closeMobile}
-        aria-hidden={!mobileOpen}
       />
 
-      <div
+      {/* Drawer — slides in from the left */}
+      <aside
         id="mobile-nav"
         role="dialog"
         aria-modal="true"
         aria-label="Mobile navigation"
-        className={cn(
-          "fixed inset-y-0 left-0 z-50 flex w-[min(100%,18rem)] flex-col border-r border-border/60 bg-background/98 shadow-2xl backdrop-blur-xl transition-transform duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] md:hidden",
-          mobileOpen ? "translate-x-0" : "-translate-x-full pointer-events-none"
-        )}
         aria-hidden={!mobileOpen}
+        className={cn(
+          "fixed inset-y-0 left-0 z-50 flex w-[min(100%,20rem)] flex-col border-r border-border/60 bg-background shadow-[0_24px_60px_-12px_rgba(15,23,42,0.35)] transition-transform duration-300 ease-[cubic-bezier(0.32,0.72,0.16,1)] md:hidden",
+          mobileOpen ? "translate-x-0" : "pointer-events-none -translate-x-full"
+        )}
       >
-        <div className="flex h-16 shrink-0 items-center border-b border-border/50 px-4">
+        {/* Header — logo + close */}
+        <div className="relative flex h-16 shrink-0 items-center justify-between border-b border-border/60 px-4">
           <Logo variant="default" />
+          <button
+            type="button"
+            onClick={closeMobile}
+            aria-label="Close menu"
+            className="inline-flex size-10 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+          >
+            <X className="size-5" />
+          </button>
         </div>
 
-        <ul className="flex flex-1 flex-col gap-1 overflow-y-auto px-3 py-4">
-          {navLinks.map((link, index) => (
-            <li
-              key={link.href}
-              className={cn(
-                "transition-[opacity,transform] duration-300 ease-out",
-                mobileOpen
-                  ? "translate-x-0 opacity-100"
-                  : "-translate-x-3 opacity-0"
-              )}
-              style={{ transitionDelay: mobileOpen ? `${index * 40 + 50}ms` : "0ms" }}
-            >
-              <Link
-                href={link.href}
-                onClick={closeMobile}
-                className={cn(
-                  "block rounded-xl px-4 py-3 text-base font-medium transition-colors duration-200",
-                  pathname === link.href
-                    ? "bg-primary/10 text-primary"
-                    : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                )}
-              >
-                {link.label}
-              </Link>
-            </li>
-          ))}
-          <li
+        {/* Hero strip */}
+        <div className="relative overflow-hidden border-b border-border/60 bg-gradient-to-br from-primary/10 via-bloom-petal/10 to-bloom-green/10 px-4 py-5">
+          <div className="bloom-pattern pointer-events-none absolute inset-0 opacity-25" />
+          <div className="relative">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-white/70 px-2.5 py-1 text-[0.7rem] font-medium uppercase tracking-wider text-primary backdrop-blur-sm dark:bg-foreground/10 dark:text-bloom-petal">
+              <Heart className="size-3 fill-primary text-primary dark:fill-bloom-petal dark:text-bloom-petal" />
+              {siteConfig.motto}
+            </span>
+            <p className="mt-2 font-heading text-base font-semibold leading-snug text-foreground">
+              Volunteer. Clean.{" "}
+              <span className="text-primary">Spread the Word.</span>
+            </p>
+          </div>
+        </div>
+
+        {/* Links */}
+        <nav className="flex-1 overflow-y-auto px-3 py-4">
+          <p className="px-3 pb-2 text-[0.7rem] font-semibold uppercase tracking-widest text-muted-foreground/70">
+            Navigate
+          </p>
+          <ul className="flex flex-col gap-1">
+            {navLinks.map((link, index) => {
+              const active = pathname === link.href;
+              return (
+                <li
+                  key={link.href}
+                  className={cn(
+                    "transition-[opacity,transform] duration-300 ease-out",
+                    mobileOpen
+                      ? "translate-x-0 opacity-100"
+                      : "-translate-x-3 opacity-0"
+                  )}
+                  style={{
+                    transitionDelay: mobileOpen ? `${index * 40 + 80}ms` : "0ms",
+                  }}
+                >
+                  <Link
+                    href={link.href}
+                    onClick={closeMobile}
+                    className={cn(
+                      "group flex items-center justify-between rounded-xl px-4 py-3 text-base font-medium transition-colors duration-200",
+                      active
+                        ? "bg-primary/10 text-primary"
+                        : "text-foreground hover:bg-muted"
+                    )}
+                  >
+                    <span>{link.label}</span>
+                    <ArrowRight
+                      className={cn(
+                        "size-4 transition-all duration-200",
+                        active
+                          ? "translate-x-0 text-primary opacity-100"
+                          : "-translate-x-1 text-muted-foreground opacity-0 group-hover:translate-x-0 group-hover:opacity-100"
+                      )}
+                    />
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+
+          <div
             className={cn(
-              "transition-[opacity,transform] duration-300 ease-out",
-              mobileOpen
-                ? "translate-x-0 opacity-100"
-                : "-translate-x-3 opacity-0"
+              "mt-6 transition-[opacity,transform] duration-300 ease-out",
+              mobileOpen ? "translate-x-0 opacity-100" : "-translate-x-3 opacity-0"
             )}
             style={{
               transitionDelay: mobileOpen
-                ? `${navLinks.length * 40 + 50}ms`
+                ? `${navLinks.length * 40 + 80}ms`
                 : "0ms",
             }}
           >
-            <Link
-              href="/profile"
-              onClick={closeMobile}
-              className={cn(
-                "flex items-center gap-3 rounded-xl px-4 py-3 text-base font-medium transition-colors duration-200",
-                pathname === "/profile"
-                  ? "bg-primary/10 text-primary"
-                  : "text-muted-foreground hover:bg-muted hover:text-foreground"
-              )}
-            >
-              <User className="size-5" />
-              My Profile
+            <p className="px-3 pb-2 text-[0.7rem] font-semibold uppercase tracking-widest text-muted-foreground/70">
+              Your account
+            </p>
+            <ul className="flex flex-col gap-1">
+              <li>
+                <Link
+                  href="/profile"
+                  onClick={closeMobile}
+                  className={cn(
+                    "flex items-center gap-3 rounded-xl px-4 py-3 text-base font-medium transition-colors duration-200",
+                    pathname === "/profile"
+                      ? "bg-primary/10 text-primary"
+                      : "text-foreground hover:bg-muted"
+                  )}
+                >
+                  <User className="size-5" />
+                  My Profile
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/sign-in"
+                  onClick={closeMobile}
+                  className="flex items-center gap-3 rounded-xl px-4 py-3 text-base font-medium text-foreground transition-colors duration-200 hover:bg-muted"
+                >
+                  <LogIn className="size-5" />
+                  Sign In
+                </Link>
+              </li>
+            </ul>
+          </div>
+        </nav>
+
+        {/* Footer CTA */}
+        <div
+          className={cn(
+            "shrink-0 border-t border-border/60 bg-muted/30 p-4 transition-[opacity,transform] duration-300 ease-out",
+            mobileOpen ? "translate-x-0 opacity-100" : "-translate-x-3 opacity-0"
+          )}
+          style={{
+            transitionDelay: mobileOpen
+              ? `${navLinks.length * 40 + 140}ms`
+              : "0ms",
+          }}
+        >
+          <Button asChild className="h-12 w-full rounded-full text-base" size="lg">
+            <Link href="/get-involved" onClick={closeMobile}>
+              Join Us
+              <ArrowRight className="size-4" />
             </Link>
-          </li>
-          <li
-            className={cn(
-              "transition-[opacity,transform] duration-300 ease-out",
-              mobileOpen
-                ? "translate-x-0 opacity-100"
-                : "-translate-x-3 opacity-0"
-            )}
-            style={{
-              transitionDelay: mobileOpen
-                ? `${navLinks.length * 40 + 90}ms`
-                : "0ms",
-            }}
-          >
-            <Link
-              href="/sign-in"
-              onClick={closeMobile}
-              className="block rounded-xl px-4 py-3 text-base font-medium text-muted-foreground transition-colors duration-200 hover:bg-muted hover:text-foreground"
-            >
-              Sign In
-            </Link>
-          </li>
-          <li
-            className={cn(
-              "pt-2 transition-[opacity,transform] duration-300 ease-out",
-              mobileOpen
-                ? "translate-x-0 opacity-100"
-                : "-translate-x-3 opacity-0"
-            )}
-            style={{
-              transitionDelay: mobileOpen ? `${navLinks.length * 40 + 130}ms` : "0ms",
-            }}
-          >
-            <Button asChild className="h-11 w-full rounded-full text-base" size="lg">
-              <Link href="/get-involved" onClick={closeMobile}>
-                Join Us
-              </Link>
-            </Button>
-          </li>
-        </ul>
-      </div>
+          </Button>
+        </div>
+      </aside>
     </header>
   );
 }

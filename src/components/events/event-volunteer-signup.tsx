@@ -1,55 +1,49 @@
 "use client";
 
 import { useState } from "react";
+import { Controller, useForm, useWatch } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import {
 	AlertCircle,
-	Award,
 	Check,
 	CheckCircle2,
 	Hand,
 	HeartPulse,
 	Leaf,
+	Mail,
+	Phone,
 	ScanFace,
 	Shovel,
 	Sparkles,
 	Trash2,
 	User,
-	UserPlus,
 	Users,
 	Wrench,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { FieldError } from "@/components/ui/field-error";
 import type { UpcomingEvent } from "@/lib/constants";
 import {
 	addEventSignup,
 	canCancelSignup,
-	EVENT_ROLE_OPTIONS,
 	EVENT_TOOL_OPTIONS,
 	getLocalAttendanceCount,
 	getSignupForEvent,
 	getStoredVolunteerEmail,
 	removeEventSignup,
-	type EventRole,
 	type EventSignup,
 	type EventToolId,
 } from "@/lib/event-signups";
+import {
+	eventVolunteerSignupSchema,
+	type EventVolunteerSignupValues,
+} from "@/lib/validation";
 import { cn } from "@/lib/utils";
 
 type EventVolunteerSignupProps = {
 	event: UpcomingEvent;
-};
-
-type FormState = {
-	name: string;
-	phone: string;
-	email: string;
-	bringingGuests: boolean | null;
-	guestCount: string;
-	tools: EventToolId[];
-	role: EventRole | "";
-	hearAbout: string;
 };
 
 const TOOL_ICONS: Record<EventToolId, LucideIcon> = {
@@ -61,17 +55,6 @@ const TOOL_ICONS: Record<EventToolId, LucideIcon> = {
 	"first-aid": HeartPulse,
 	none: Sparkles,
 };
-
-const emptyForm = (): FormState => ({
-	name: "",
-	phone: "",
-	email: "",
-	bringingGuests: null,
-	guestCount: "",
-	tools: [],
-	role: "",
-	hearAbout: "",
-});
 
 type SignupViewState = {
 	eventId: number;
@@ -132,43 +115,66 @@ function FormSection({
 }
 
 function FieldLabel({
-	id,
+	htmlFor,
 	children,
 	optional,
 }: {
-	id: string;
+	htmlFor: string;
 	children: React.ReactNode;
 	optional?: boolean;
 }) {
 	return (
-		<label htmlFor={id} className="mb-2 block text-sm font-medium text-foreground">
+		<label
+			htmlFor={htmlFor}
+			className="mb-2 block text-sm font-medium text-foreground"
+		>
 			{children}
-			{optional && <span className="font-normal text-muted-foreground"> (optional)</span>}
+			{optional && (
+				<span className="font-normal text-muted-foreground"> (optional)</span>
+			)}
 		</label>
 	);
 }
 
+const emptyDefaults = (email?: string | null): EventVolunteerSignupValues => ({
+	name: "",
+	phone: "",
+	email: email ?? "",
+	bringingGuests: false,
+	guestCount: 0,
+	tools: [],
+	role: "",
+	hearAbout: "",
+});
+
 export function EventVolunteerSignup({ event }: EventVolunteerSignupProps) {
-	const [signupState, setSignupState] = useState(() => loadSignupViewState(event.id));
+	const [signupState, setSignupState] = useState(() =>
+		loadSignupViewState(event.id),
+	);
 	const [showForm, setShowForm] = useState(false);
-	const [form, setForm] = useState<FormState>(emptyForm());
-	const [error, setError] = useState<string | null>(null);
+	const [formError, setFormError] = useState<string | null>(null);
 	const [success, setSuccess] = useState<string | null>(null);
 
-	const refresh = () => {
-		const next = loadSignupViewState(event.id);
-		setSignupState(next);
-		if (next.myEmail) {
-			setForm((current) => ({ ...current, email: next.myEmail! }));
-		}
-	};
+	const {
+		register,
+		control,
+		handleSubmit,
+		reset,
+		setValue,
+		formState: { errors, isSubmitting },
+	} = useForm<EventVolunteerSignupValues>({
+		resolver: zodResolver(eventVolunteerSignupSchema),
+		mode: "onTouched",
+		defaultValues: emptyDefaults(signupState.myEmail),
+	});
 
+	// Sync local view state if the event prop changes (e.g. when the parent
+	// re-renders this component for a different event). Adjusting state during
+	// render — see https://react.dev/learn/you-might-not-need-an-effect.
 	if (signupState.eventId !== event.id) {
 		const next = loadSignupViewState(event.id);
 		setSignupState(next);
-		if (next.myEmail) {
-			setForm((current) => ({ ...current, email: next.myEmail! }));
-		}
+		reset(emptyDefaults(next.myEmail));
 	}
 
 	const { attendanceCount, myEmail, mySignup } = signupState;
@@ -176,93 +182,65 @@ export function EventVolunteerSignup({ event }: EventVolunteerSignupProps) {
 	const totalPeople = event.volunteersSignedUp + attendanceCount;
 	const cancelAllowed = canCancelSignup(event.date);
 
-	const toggleTool = (toolId: EventToolId) => {
-		setForm((current) => {
-			if (toolId === "none") {
-				return { ...current, tools: current.tools.includes("none") ? [] : ["none"] };
-			}
-			const withoutNone = current.tools.filter((t) => t !== "none");
-			if (withoutNone.includes(toolId)) {
-				return { ...current, tools: withoutNone.filter((t) => t !== toolId) };
-			}
-			return { ...current, tools: [...withoutNone, toolId] };
-		});
+	const bringingGuests = useWatch({ control, name: "bringingGuests" });
+	const selectedTools = useWatch({ control, name: "tools" });
+
+	const refresh = () => {
+		const next = loadSignupViewState(event.id);
+		setSignupState(next);
+		reset(emptyDefaults(next.myEmail));
 	};
 
-	const handleSignUp = (e: React.FormEvent) => {
-		e.preventDefault();
-		setError(null);
+	const toggleTool = (toolId: EventToolId) => {
+		const current = selectedTools ?? [];
+		let nextTools: EventToolId[];
+		if (toolId === "none") {
+			nextTools = current.includes("none") ? [] : ["none"];
+		} else {
+			const withoutNone = current.filter((t) => t !== "none");
+			nextTools = withoutNone.includes(toolId)
+				? withoutNone.filter((t) => t !== toolId)
+				: [...withoutNone, toolId];
+		}
+		setValue("tools", nextTools, { shouldValidate: true, shouldDirty: true });
+	};
+
+	const onSubmit = handleSubmit((values) => {
+		setFormError(null);
 		setSuccess(null);
-
-		const name = form.name.trim();
-		const phone = form.phone.trim();
-		const email = form.email.trim();
-
-		if (!name || !phone || !email) {
-			setError("Please complete your personal info so we know you're coming.");
-			return;
-		}
-
-		if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-			setError("Please enter a valid email address.");
-			return;
-		}
-
-		if (form.bringingGuests === null) {
-			setError("Please let us know if you're bringing anyone along.");
-			return;
-		}
-
-		let guestCount = 0;
-		if (form.bringingGuests) {
-			const parsed = Number.parseInt(form.guestCount, 10);
-			if (!parsed || parsed < 1) {
-				setError("Please enter how many people you're bringing along.");
-				return;
-			}
-			guestCount = parsed;
-		}
-
-		if (form.tools.length === 0) {
-			setError("Please select at least one tools option.");
-			return;
-		}
 
 		addEventSignup({
 			eventId: event.id,
-			name,
-			phone,
-			email,
-			bringingGuests: form.bringingGuests,
-			guestCount,
-			tools: form.tools,
-			role: form.role || undefined,
-			hearAbout: form.hearAbout.trim() || undefined,
+			name: values.name,
+			phone: values.phone,
+			email: values.email,
+			bringingGuests: values.bringingGuests,
+			guestCount: values.bringingGuests ? values.guestCount ?? 0 : 0,
+			tools: values.tools,
+			role: values.role || undefined,
+			hearAbout: values.hearAbout || undefined,
 		});
 
 		refresh();
 		setShowForm(false);
 		setSuccess("You're signed up! We'll count on you to serve with us.");
-	};
+	});
 
 	const handleCancel = () => {
 		if (!myEmail) return;
-		setError(null);
+		setFormError(null);
 		setSuccess(null);
 
 		if (!cancelAllowed) {
-			setError(
+			setFormError(
 				"Sign-ups can't be cancelled the day before an event. Please contact us if something urgent comes up.",
 			);
 			return;
 		}
 
 		const removed = removeEventSignup(event.id, myEmail);
-		if (removed) {
-			refresh();
-			setForm(emptyForm());
-			setSuccess("Your sign-up has been cancelled.");
-		}
+		if (removed) refresh();
+		setSuccess("Your sign-up has been cancelled.");
 	};
 
 	return (
@@ -284,10 +262,10 @@ export function EventVolunteerSignup({ event }: EventVolunteerSignupProps) {
 				</div>
 			</div>
 
-			{error && (
+			{formError && (
 				<p className="flex items-start gap-2 rounded-2xl border border-destructive/20 bg-destructive/10 px-4 py-3 text-sm text-destructive">
 					<AlertCircle className="mt-0.5 size-4 shrink-0" />
-					{error}
+					{formError}
 				</p>
 			)}
 
@@ -301,12 +279,7 @@ export function EventVolunteerSignup({ event }: EventVolunteerSignupProps) {
 			{isSignedUp && mySignup ? (
 				<div className="relative overflow-hidden rounded-3xl border border-bloom-green/25 bg-gradient-to-br from-bloom-green/8 to-card p-5 shadow-md shadow-bloom-green/5">
 					<div className="pointer-events-none absolute -right-8 -top-8 size-24 rounded-full bg-bloom-green/15 blur-2xl" />
-					<div
-						className={cn(
-							"relative flex items-center gap-3 rounded-2xl border border-bloom-green/20 bg-background/80 px-4 py-3 text-sm font-medium backdrop-blur-sm",
-							"text-bloom-green",
-						)}
-					>
+					<div className="relative flex items-center gap-3 rounded-2xl border border-bloom-green/20 bg-background/80 px-4 py-3 text-sm font-medium text-bloom-green backdrop-blur-sm">
 						<CheckCircle2 className="size-5 shrink-0" />
 						You&apos;re signed up to serve at this event
 					</div>
@@ -357,8 +330,8 @@ export function EventVolunteerSignup({ event }: EventVolunteerSignupProps) {
 					</Button>
 					{!cancelAllowed && (
 						<p className="relative mt-3 text-xs text-muted-foreground">
-							Cancellation isn&apos;t available the day before the event. Reach out
-							via Contact Us if you have an emergency.
+							Cancellation isn&apos;t available the day before the event. Reach
+							out via Contact Us if you have an emergency.
 						</p>
 					)}
 				</div>
@@ -370,11 +343,9 @@ export function EventVolunteerSignup({ event }: EventVolunteerSignupProps) {
 							className="h-11 w-full rounded-full px-6 shadow-lg shadow-primary/20 sm:w-auto"
 							onClick={() => {
 								setShowForm(true);
-								setError(null);
+								setFormError(null);
 								setSuccess(null);
-								if (myEmail) {
-									setForm((current) => ({ ...current, email: myEmail }));
-								}
+								reset(emptyDefaults(myEmail));
 							}}
 						>
 							<Sparkles className="size-4" />
@@ -382,7 +353,8 @@ export function EventVolunteerSignup({ event }: EventVolunteerSignupProps) {
 						</Button>
 					) : (
 						<form
-							onSubmit={handleSignUp}
+							onSubmit={onSubmit}
+							noValidate
 							className="relative overflow-hidden rounded-3xl border border-primary/15 bg-gradient-to-br from-card via-background to-secondary/30 p-5 shadow-lg shadow-primary/5 md:p-6"
 						>
 							<div className="bloom-pattern pointer-events-none absolute inset-0 opacity-[0.35]" />
@@ -401,117 +373,230 @@ export function EventVolunteerSignup({ event }: EventVolunteerSignupProps) {
 									</p>
 								</div>
 
-								<FormSection
-									title="Tools you're bringing"
-									icon={Wrench}
-									accent="gold"
-									className="mt-8"
-								>
-									<div className="grid gap-2 sm:grid-cols-2">
-										{EVENT_TOOL_OPTIONS.map((tool) => {
-											const ToolIcon = TOOL_ICONS[tool.id];
-											const selected = form.tools.includes(tool.id);
-											return (
-												<label
-													key={tool.id}
-													className={cn(
-														"group flex cursor-pointer items-center gap-3 rounded-2xl border p-3 transition-all duration-200",
-														selected
-															? "border-bloom-gold/40 bg-bloom-gold/10 shadow-sm shadow-bloom-gold/10"
-															: "border-border/60 bg-background/80 hover:border-bloom-gold/30 hover:bg-bloom-gold/5",
-													)}
-												>
-													<input
-														type="checkbox"
-														className="sr-only"
-														checked={selected}
-														onChange={() => toggleTool(tool.id)}
+								<FormSection title="Your details" icon={User} accent="primary">
+									<div className="space-y-4">
+										<div>
+											<FieldLabel htmlFor={`name-${event.id}`}>
+												Full name
+											</FieldLabel>
+											<Input
+												id={`name-${event.id}`}
+												placeholder="Sarah Mitchell"
+												autoComplete="name"
+												className="h-11 rounded-xl border-border/60 bg-background/90"
+												aria-invalid={Boolean(errors.name)}
+												{...register("name")}
+											/>
+											<FieldError message={errors.name?.message} />
+										</div>
+										<div className="grid gap-4 sm:grid-cols-2">
+											<div>
+												<FieldLabel htmlFor={`email-${event.id}`}>
+													Email
+												</FieldLabel>
+												<div className="relative">
+													<Mail className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+													<Input
+														id={`email-${event.id}`}
+														type="email"
+														placeholder="you@example.com"
+														autoComplete="email"
+														className="h-11 rounded-xl border-border/60 bg-background/90 pl-10"
+														aria-invalid={Boolean(errors.email)}
+														{...register("email")}
 													/>
-													<span
-														className={cn(
-															"flex size-9 shrink-0 items-center justify-center rounded-xl transition-colors",
-															selected
-																? "bg-bloom-gold/20 text-bloom-gold-foreground"
-																: "bg-muted text-muted-foreground group-hover:bg-bloom-gold/15 group-hover:text-bloom-gold-foreground",
-														)}
-													>
-														<ToolIcon
-															className="size-4"
-															strokeWidth={1.75}
-														/>
-													</span>
-													<span className="min-w-0 flex-1 text-sm text-foreground leading-snug">
-														{tool.label}
-													</span>
-													<span
-														className={cn(
-															"flex size-6 shrink-0 items-center justify-center rounded-full border transition-all",
-															selected
-																? "border-bloom-gold bg-bloom-gold text-white"
-																: "border-border bg-background",
-														)}
-													>
-														{selected && (
-															<Check
-																className="size-3.5"
-																strokeWidth={3}
-															/>
-														)}
-													</span>
-												</label>
-											);
-										})}
+												</div>
+												<FieldError message={errors.email?.message} />
+											</div>
+											<div>
+												<FieldLabel htmlFor={`phone-${event.id}`}>
+													Phone
+												</FieldLabel>
+												<div className="relative">
+													<Phone className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+													<Input
+														id={`phone-${event.id}`}
+														type="tel"
+														placeholder="+234..."
+														autoComplete="tel"
+														className="h-11 rounded-xl border-border/60 bg-background/90 pl-10"
+														aria-invalid={Boolean(errors.phone)}
+														{...register("phone")}
+													/>
+												</div>
+												<FieldError message={errors.phone?.message} />
+											</div>
+										</div>
 									</div>
 								</FormSection>
 
-								{/* <FormSection
-									title="Role / Skills"
-									icon={Award}
-									accent="primary"
-									className="mt-8"
-								>
-									<FieldLabel id={`role-${event.id}`} optional>
-										Select your role or skills
-									</FieldLabel>
-									<select
-										id={`role-${event.id}`}
-										value={form.role}
-										onChange={(e) =>
-											setForm({
-												...form,
-												role: e.target.value as EventRole | "",
-											})
-										}
-										className="flex h-11 w-full rounded-xl border border-border/60 bg-background/90 px-3 py-2 text-sm text-foreground outline-none transition-colors focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/20"
-									>
-										<option value="">Select a role (optional)</option>
-										{EVENT_ROLE_OPTIONS.map((role) => (
-											<option key={role} value={role}>
-												{role}
-											</option>
-										))}
-									</select>
-								</FormSection> */}
+								<Controller
+									control={control}
+									name="bringingGuests"
+									render={({ field, fieldState }) => (
+										<FormSection
+											title="Bringing anyone with you?"
+											icon={Users}
+											accent="green"
+										>
+											<div className="space-y-3">
+												<div className="grid grid-cols-2 gap-2">
+													{(
+														[
+															{ value: false, label: "Just me" },
+															{ value: true, label: "Bringing guests" },
+														] as const
+													).map((option) => {
+														const selected = field.value === option.value;
+														return (
+															<button
+																key={option.label}
+																type="button"
+																onClick={() => field.onChange(option.value)}
+																className={cn(
+																	"rounded-2xl border p-3 text-sm font-medium transition-all duration-200",
+																	selected
+																		? "border-bloom-green/40 bg-bloom-green/10 text-bloom-green shadow-sm"
+																		: "border-border/60 bg-background/80 text-foreground hover:border-bloom-green/30",
+																)}
+															>
+																{option.label}
+															</button>
+														);
+													})}
+												</div>
+												<FieldError message={fieldState.error?.message} />
+
+												{bringingGuests && (
+													<div>
+														<FieldLabel htmlFor={`guest-count-${event.id}`}>
+															How many guests?
+														</FieldLabel>
+														<Controller
+															control={control}
+															name="guestCount"
+															render={({ field: countField, fieldState: countState }) => (
+																<>
+																	<Input
+																		id={`guest-count-${event.id}`}
+																		type="number"
+																		min={1}
+																		max={20}
+																		inputMode="numeric"
+																		className="h-11 rounded-xl border-border/60 bg-background/90"
+																		value={countField.value ?? ""}
+																		onChange={(e) => {
+																			const v = e.target.value;
+																			countField.onChange(
+																				v === "" ? undefined : Number(v),
+																			);
+																		}}
+																		onBlur={countField.onBlur}
+																		aria-invalid={Boolean(countState.error)}
+																	/>
+																	<FieldError
+																		message={countState.error?.message}
+																	/>
+																</>
+															)}
+														/>
+													</div>
+												)}
+											</div>
+										</FormSection>
+									)}
+								/>
+
+								<Controller
+									control={control}
+									name="tools"
+									render={({ fieldState }) => (
+										<FormSection
+											title="Tools you're bringing"
+											icon={Wrench}
+											accent="gold"
+										>
+											<div className="grid gap-2 sm:grid-cols-2">
+												{EVENT_TOOL_OPTIONS.map((tool) => {
+													const ToolIcon = TOOL_ICONS[tool.id];
+													const selected = (selectedTools ?? []).includes(
+														tool.id,
+													);
+													return (
+														<label
+															key={tool.id}
+															className={cn(
+																"group flex cursor-pointer items-center gap-3 rounded-2xl border p-3 transition-all duration-200",
+																selected
+																	? "border-bloom-gold/40 bg-bloom-gold/10 shadow-sm shadow-bloom-gold/10"
+																	: "border-border/60 bg-background/80 hover:border-bloom-gold/30 hover:bg-bloom-gold/5",
+															)}
+														>
+															<input
+																type="checkbox"
+																className="sr-only"
+																checked={selected}
+																onChange={() => toggleTool(tool.id)}
+															/>
+															<span
+																className={cn(
+																	"flex size-9 shrink-0 items-center justify-center rounded-xl transition-colors",
+																	selected
+																		? "bg-bloom-gold/20 text-bloom-gold-foreground"
+																		: "bg-muted text-muted-foreground group-hover:bg-bloom-gold/15 group-hover:text-bloom-gold-foreground",
+																)}
+															>
+																<ToolIcon
+																	className="size-4"
+																	strokeWidth={1.75}
+																/>
+															</span>
+															<span className="min-w-0 flex-1 text-sm leading-snug text-foreground">
+																{tool.label}
+															</span>
+															<span
+																className={cn(
+																	"flex size-6 shrink-0 items-center justify-center rounded-full border transition-all",
+																	selected
+																		? "border-bloom-gold bg-bloom-gold text-white"
+																		: "border-border bg-background",
+																)}
+															>
+																{selected && (
+																	<Check
+																		className="size-3.5"
+																		strokeWidth={3}
+																	/>
+																)}
+															</span>
+														</label>
+													);
+												})}
+											</div>
+											<FieldError message={fieldState.error?.message} />
+										</FormSection>
+									)}
+								/>
 
 								<div className="rounded-2xl border border-border/40 bg-background/70 p-4 backdrop-blur-sm md:p-5">
-									<FieldLabel id={`hear-about-${event.id}`} optional>
+									<FieldLabel htmlFor={`hear-about-${event.id}`} optional>
 										How did you hear about this event?
 									</FieldLabel>
 									<Input
 										id={`hear-about-${event.id}`}
-										value={form.hearAbout}
-										onChange={(e) =>
-											setForm({ ...form, hearAbout: e.target.value })
-										}
 										placeholder="Friend, church, social media…"
 										className="h-11 rounded-xl border-border/60 bg-background/90"
+										aria-invalid={Boolean(errors.hearAbout)}
+										{...register("hearAbout")}
 									/>
+									<FieldError message={errors.hearAbout?.message} />
 								</div>
 
 								<div className="flex flex-wrap gap-3 border-t border-border/50 pt-5">
 									<Button
 										type="submit"
 										className="h-11 rounded-full px-6 shadow-lg shadow-primary/20"
+										disabled={isSubmitting}
 									>
 										<CheckCircle2 className="size-4" />
 										Confirm I&apos;m coming
@@ -522,13 +607,7 @@ export function EventVolunteerSignup({ event }: EventVolunteerSignupProps) {
 										className="h-11 rounded-full px-6"
 										onClick={() => {
 											setShowForm(false);
-											setForm(emptyForm());
-											if (myEmail) {
-												setForm((current) => ({
-													...emptyForm(),
-													email: myEmail,
-												}));
-											}
+											reset(emptyDefaults(myEmail));
 										}}
 									>
 										Cancel

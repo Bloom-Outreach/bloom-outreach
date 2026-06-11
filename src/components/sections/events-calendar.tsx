@@ -1,18 +1,19 @@
 "use client";
 
+import Link from "next/link";
 import { useMemo, useState } from "react";
 import {
+  ArrowRight,
   CalendarDays,
   ChevronLeft,
   ChevronRight,
   Clock,
   MapPin,
+  Users,
 } from "lucide-react";
 import { BloomLogoIcon } from "@/components/bloom-logo-icon";
-import { EventVolunteerSignup } from "@/components/events/event-volunteer-signup";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { MapEmbed } from "@/components/ui/map-embed";
 import { upcomingEvents, type UpcomingEvent } from "@/lib/constants";
 import {
   formatEventDate,
@@ -91,11 +92,18 @@ function EventCard({ event, isNext }: { event: UpcomingEvent; isNext?: boolean }
           <MapPin className="mt-0.5 size-4 shrink-0 text-primary" />
           {event.location}
         </li>
+        <li className="flex items-start gap-2">
+          <Users className="mt-0.5 size-4 shrink-0 text-primary" />
+          {event.volunteersSignedUp} volunteers signed up
+        </li>
       </ul>
 
-      <MapEmbed location={event.location} className="h-44" />
-
-      <EventVolunteerSignup event={event} />
+      <Button asChild className="mt-auto w-full rounded-full">
+        <Link href={`/events/${event.id}`}>
+          View Event Details
+          <ArrowRight className="size-4" />
+        </Link>
+      </Button>
     </Card>
   );
 }

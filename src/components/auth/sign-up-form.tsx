@@ -1,143 +1,161 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowRight, UserPlus } from "lucide-react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { ArrowRight, Loader2, UserPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { FieldError } from "@/components/ui/field-error";
 import { EmailInput, PasswordInput } from "@/components/auth/auth-fields";
-import { volunteerFocusOptions, type VolunteerRole } from "@/lib/mock-volunteer";
+
+import { signUpSchema, type SignUpValues } from "@/lib/validation";
 import { cn } from "@/lib/utils";
 
 export function SignUpForm() {
-  const router = useRouter();
-  const [focus, setFocus] = useState<VolunteerRole>("Volunteer");
+	const router = useRouter();
+	const {
+		register,
+		handleSubmit,
+		control,
+		formState: { errors, isSubmitting },
+	} = useForm<SignUpValues>({
+		resolver: zodResolver(signUpSchema),
+		mode: "onTouched",
+		defaultValues: {
+			firstName: "",
+			lastName: "",
+			email: "",
+			password: "",
+			confirmPassword: "",
+			focus: "Volunteer",
+			terms: false,
+		},
+	});
 
-  return (
-    <Card className="border-border/50 p-6 shadow-lg shadow-primary/5 sm:p-8">
-      <form
-        className="space-y-5"
-        onSubmit={(e) => {
-          e.preventDefault();
-          router.push("/profile");
-        }}
-      >
-        <div className="grid gap-5 sm:grid-cols-2">
-          <div>
-            <label htmlFor="firstName" className="mb-2 block text-sm font-medium">
-              First Name
-            </label>
-            <Input
-              id="firstName"
-              name="firstName"
-              autoComplete="given-name"
-              placeholder="Sarah"
-              className="h-11 rounded-xl"
-              required
-            />
-          </div>
-          <div>
-            <label htmlFor="lastName" className="mb-2 block text-sm font-medium">
-              Last Name
-            </label>
-            <Input
-              id="lastName"
-              name="lastName"
-              autoComplete="family-name"
-              placeholder="Mitchell"
-              className="h-11 rounded-xl"
-              required
-            />
-          </div>
-        </div>
+	const onSubmit = handleSubmit(async () => {
+		router.push("/profile");
+	});
 
-        <EmailInput
-          id="sign-up-email"
-          name="email"
-          placeholder="you@example.com"
-          required
-        />
+	return (
+		<Card className="border-border/50 p-6 shadow-lg shadow-primary/5 sm:p-8">
+			<form className="space-y-5" onSubmit={onSubmit} noValidate>
+				<div className="grid gap-5 sm:grid-cols-2">
+					<div>
+						<label htmlFor="firstName" className="mb-2 block text-sm font-medium">
+							First Name
+						</label>
+						<Input
+							id="firstName"
+							autoComplete="given-name"
+							placeholder="Sarah"
+							className="h-11 rounded-xl"
+							aria-invalid={Boolean(errors.firstName)}
+							{...register("firstName")}
+						/>
+						<FieldError message={errors.firstName?.message} />
+					</div>
+					<div>
+						<label htmlFor="lastName" className="mb-2 block text-sm font-medium">
+							Last Name
+						</label>
+						<Input
+							id="lastName"
+							autoComplete="family-name"
+							placeholder="Mitchell"
+							className="h-11 rounded-xl"
+							aria-invalid={Boolean(errors.lastName)}
+							{...register("lastName")}
+						/>
+						<FieldError message={errors.lastName?.message} />
+					</div>
+				</div>
 
-        <PasswordInput
-          id="sign-up-password"
-          name="password"
-          label="Password"
-          placeholder="At least 8 characters"
-          autoComplete="new-password"
-          minLength={8}
-          required
-        />
+				<EmailInput
+					id="sign-up-email"
+					placeholder="you@example.com"
+					error={errors.email?.message}
+					{...register("email")}
+				/>
 
-        <PasswordInput
-          id="confirm-password"
-          name="confirmPassword"
-          label="Confirm Password"
-          placeholder="Re-enter your password"
-          autoComplete="new-password"
-          minLength={8}
-          required
-        />
+				<PasswordInput
+					id="sign-up-password"
+					label="Password"
+					placeholder="At least 8 characters"
+					autoComplete="new-password"
+					error={errors.password?.message}
+					{...register("password")}
+				/>
 
-        <div>
-          <p className="mb-3 text-sm font-medium">How do you want to serve?</p>
-          <div className="flex flex-wrap gap-2">
-            {volunteerFocusOptions.map((option) => (
-              <button
-                key={option}
-                type="button"
-                onClick={() => setFocus(option)}
-                className={cn(
-                  "rounded-full border px-3.5 py-1.5 text-sm font-medium transition-all duration-200",
-                  focus === option
-                    ? "border-primary bg-primary text-primary-foreground shadow-sm"
-                    : "border-border text-muted-foreground hover:border-primary/30 hover:text-foreground"
-                )}
-              >
-                {option}
-              </button>
-            ))}
-          </div>
-          <input type="hidden" name="focus" value={focus} />
-        </div>
+				<PasswordInput
+					id="confirm-password"
+					label="Confirm Password"
+					placeholder="Re-enter your password"
+					autoComplete="new-password"
+					error={errors.confirmPassword?.message}
+					{...register("confirmPassword")}
+				/>
 
-        <label className="flex cursor-pointer items-start gap-3 text-sm text-muted-foreground">
-          <input
-            type="checkbox"
-            name="terms"
-            className="mt-0.5 size-4 shrink-0 rounded border-input accent-primary"
-            required
-          />
-          <span>
-            I agree to volunteer with Bloom Outreach and serve in accordance
-            with our mission to love, serve, and share the gospel of Jesus.
-          </span>
-        </label>
+				<div>
+					<label className="flex cursor-pointer items-start gap-3 text-sm text-muted-foreground">
+						<input
+							type="checkbox"
+							className="mt-0.5 size-4 shrink-0 rounded border-input accent-primary"
+							aria-invalid={Boolean(errors.terms)}
+							{...register("terms")}
+						/>
+						<span>
+							I agree to volunteer with Bloom Outreach and serve our community with
+							kindness, hope, and love..
+						</span>
+					</label>
+					<FieldError message={errors.terms?.message} />
+				</div>
 
-        <Button type="submit" size="lg" className="h-12 w-full rounded-full text-base">
-          Create Account
-          <UserPlus className="size-4" />
-        </Button>
-      </form>
+				<Button
+					type="submit"
+					size="lg"
+					className="h-12 w-full rounded-full text-base"
+					disabled={isSubmitting}
+				>
+					{isSubmitting ? (
+						<>
+							Creating account...
+							<Loader2 className="size-4 animate-spin" />
+						</>
+					) : (
+						<>
+							Create Account
+							<UserPlus className="size-4" />
+						</>
+					)}
+				</Button>
+			</form>
 
-      <div className="relative my-8">
-        <div className="absolute inset-0 flex items-center">
-          <div className="w-full border-t border-border/60" />
-        </div>
-        <div className="relative flex justify-center">
-          <span className="bg-card px-3 text-xs uppercase tracking-wider text-muted-foreground">
-            Already a volunteer?
-          </span>
-        </div>
-      </div>
+			<div className="relative my-8">
+				<div className="absolute inset-0 flex items-center">
+					<div className="w-full border-t border-border/60" />
+				</div>
+				<div className="relative flex justify-center">
+					<span className="bg-card px-3 text-xs uppercase tracking-wider text-muted-foreground">
+						Already a volunteer?
+					</span>
+				</div>
+			</div>
 
-      <Button asChild variant="outline" size="lg" className="h-12 w-full rounded-full text-base">
-        <Link href="/sign-in">
-          Sign In Instead
-          <ArrowRight className="size-4" />
-        </Link>
-      </Button>
-    </Card>
-  );
+			<Button
+				asChild
+				variant="outline"
+				size="lg"
+				className="h-12 w-full rounded-full text-base"
+			>
+				<Link href="/sign-in">
+					Sign In Instead
+					<ArrowRight className="size-4" />
+				</Link>
+			</Button>
+		</Card>
+	);
 }

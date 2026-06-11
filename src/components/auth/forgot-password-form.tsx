@@ -2,35 +2,60 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Mail } from "lucide-react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { ArrowLeft, Loader2, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { EmailInput } from "@/components/auth/auth-fields";
+import {
+  forgotPasswordSchema,
+  type ForgotPasswordValues,
+} from "@/lib/validation";
 
 export function ForgotPasswordForm() {
   const router = useRouter();
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<ForgotPasswordValues>({
+    resolver: zodResolver(forgotPasswordSchema),
+    mode: "onTouched",
+    defaultValues: { email: "" },
+  });
+
+  const onSubmit = handleSubmit(async ({ email }) => {
+    router.push(`/verify-reset-code?email=${encodeURIComponent(email)}`);
+  });
 
   return (
     <Card className="border-border/50 p-6 shadow-lg shadow-primary/5 sm:p-8">
-      <form
-        className="space-y-5"
-        onSubmit={(e) => {
-          e.preventDefault();
-          const formData = new FormData(e.currentTarget);
-          const email = String(formData.get("email") ?? "");
-          router.push(`/verify-reset-code?email=${encodeURIComponent(email)}`);
-        }}
-      >
+      <form className="space-y-5" onSubmit={onSubmit} noValidate>
         <EmailInput
           id="forgot-password-email"
-          name="email"
           placeholder="you@example.com"
-          required
+          error={errors.email?.message}
+          {...register("email")}
         />
 
-        <Button type="submit" size="lg" className="h-12 w-full rounded-full text-base">
-          Send Reset Code
-          <Mail className="size-4" />
+        <Button
+          type="submit"
+          size="lg"
+          className="h-12 w-full rounded-full text-base"
+          disabled={isSubmitting}
+        >
+          {isSubmitting ? (
+            <>
+              Sending code...
+              <Loader2 className="size-4 animate-spin" />
+            </>
+          ) : (
+            <>
+              Send Reset Code
+              <Mail className="size-4" />
+            </>
+          )}
         </Button>
       </form>
 

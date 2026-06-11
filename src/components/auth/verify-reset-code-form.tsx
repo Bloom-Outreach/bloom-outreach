@@ -2,21 +2,43 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
-import { ArrowLeft, ShieldCheck } from "lucide-react";
+import { Controller, useForm, useWatch } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { ArrowLeft, Loader2, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { CodeInput } from "@/components/auth/code-input";
+import { FieldError } from "@/components/ui/field-error";
+import {
+  makeVerifyCodeSchema,
+  type VerifyCodeValues,
+} from "@/lib/validation";
 
 interface VerifyResetCodeFormProps {
   email: string;
 }
 
 const CODE_LENGTH = 6;
+const schema = makeVerifyCodeSchema(CODE_LENGTH);
 
 export function VerifyResetCodeForm({ email }: VerifyResetCodeFormProps) {
   const router = useRouter();
-  const [code, setCode] = useState("");
+  const {
+    control,
+    handleSubmit,
+    reset,
+    formState: { errors, isSubmitting },
+  } = useForm<VerifyCodeValues>({
+    resolver: zodResolver(schema),
+    mode: "onTouched",
+    defaultValues: { code: "" },
+  });
+
+  const code = useWatch({ control, name: "code" });
+
+  const onSubmit = handleSubmit(async () => {
+    router.push("/reset-password");
+  });
 
   return (
     <Card className="border-border/50 p-6 shadow-lg shadow-primary/5 sm:p-8">
@@ -26,34 +48,48 @@ export function VerifyResetCodeForm({ email }: VerifyResetCodeFormProps) {
         below to reset your password.
       </p>
 
-      <form
-        className="space-y-6"
-        onSubmit={(e) => {
-          e.preventDefault();
-          if (code.length !== CODE_LENGTH) return;
-          router.push("/reset-password");
-        }}
-      >
+      <form className="space-y-6" onSubmit={onSubmit} noValidate>
         <div>
-          <label htmlFor="verification-code" className="mb-3 block text-center text-sm font-medium">
+          <label
+            htmlFor="verification-code"
+            className="mb-3 block text-center text-sm font-medium"
+          >
             Verification code
           </label>
-          <CodeInput
-            id="verification-code"
-            length={CODE_LENGTH}
-            value={code}
-            onChange={setCode}
+          <Controller
+            control={control}
+            name="code"
+            render={({ field }) => (
+              <CodeInput
+                id="verification-code"
+                length={CODE_LENGTH}
+                value={field.value}
+                onChange={field.onChange}
+              />
+            )}
           />
+          <div className="mt-2 flex justify-center">
+            <FieldError message={errors.code?.message} />
+          </div>
         </div>
 
         <Button
           type="submit"
           size="lg"
           className="h-12 w-full rounded-full text-base"
-          disabled={code.length !== CODE_LENGTH}
+          disabled={isSubmitting || code.length !== CODE_LENGTH}
         >
-          Verify Code
-          <ShieldCheck className="size-4" />
+          {isSubmitting ? (
+            <>
+              Verifying...
+              <Loader2 className="size-4 animate-spin" />
+            </>
+          ) : (
+            <>
+              Verify Code
+              <ShieldCheck className="size-4" />
+            </>
+          )}
         </Button>
       </form>
 
@@ -62,7 +98,7 @@ export function VerifyResetCodeForm({ email }: VerifyResetCodeFormProps) {
         <button
           type="button"
           className="font-medium text-primary hover:underline"
-          onClick={() => setCode("")}
+          onClick={() => reset({ code: "" })}
         >
           Resend code
         </button>

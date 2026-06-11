@@ -2,45 +2,55 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowRight, LogIn } from "lucide-react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { ArrowRight, Loader2, LogIn } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { EmailInput, PasswordInput } from "@/components/auth/auth-fields";
+import { signInSchema, type SignInValues } from "@/lib/validation";
 
 export function SignInForm() {
   const router = useRouter();
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<SignInValues>({
+    resolver: zodResolver(signInSchema),
+    mode: "onTouched",
+    defaultValues: { email: "", password: "", remember: false },
+  });
+
+  const onSubmit = handleSubmit(async () => {
+    router.push("/profile");
+  });
 
   return (
     <Card className="border-border/50 p-6 shadow-lg shadow-primary/5 sm:p-8">
-      <form
-        className="space-y-5"
-        onSubmit={(e) => {
-          e.preventDefault();
-          router.push("/profile");
-        }}
-      >
+      <form className="space-y-5" onSubmit={onSubmit} noValidate>
         <EmailInput
           id="sign-in-email"
-          name="email"
           placeholder="you@example.com"
-          required
+          error={errors.email?.message}
+          {...register("email")}
         />
 
         <PasswordInput
           id="sign-in-password"
-          name="password"
           label="Password"
           placeholder="Enter your password"
           autoComplete="current-password"
-          required
+          error={errors.password?.message}
+          {...register("password")}
         />
 
         <div className="flex items-center justify-between gap-4">
           <label className="flex cursor-pointer items-center gap-2.5 text-sm text-muted-foreground">
             <input
               type="checkbox"
-              name="remember"
               className="size-4 rounded border-input accent-primary"
+              {...register("remember")}
             />
             Remember me
           </label>
@@ -52,9 +62,23 @@ export function SignInForm() {
           </Link>
         </div>
 
-        <Button type="submit" size="lg" className="h-12 w-full rounded-full text-base">
-          Sign In
-          <LogIn className="size-4" />
+        <Button
+          type="submit"
+          size="lg"
+          className="h-12 w-full rounded-full text-base"
+          disabled={isSubmitting}
+        >
+          {isSubmitting ? (
+            <>
+              Signing in...
+              <Loader2 className="size-4 animate-spin" />
+            </>
+          ) : (
+            <>
+              Sign In
+              <LogIn className="size-4" />
+            </>
+          )}
         </Button>
       </form>
 

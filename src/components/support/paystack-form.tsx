@@ -2,39 +2,53 @@
 
 import Script from "next/script";
 import { useState } from "react";
-import { CheckCircle2, CreditCard, Loader2 } from "lucide-react";
+import { Controller, useForm, useWatch } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { AlertCircle, CheckCircle2, CreditCard, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { FieldError } from "@/components/ui/field-error";
 import { AmountPicker } from "@/components/support/amount-picker";
 import {
   formatNaira,
   generatePaymentReference,
   supportConfig,
 } from "@/lib/support";
+import {
+  paystackDonationSchema,
+  type PaystackDonationValues,
+} from "@/lib/validation";
 
 export function PaystackForm() {
-  const [amount, setAmount] = useState<number>(supportConfig.presetAmounts[1]);
   const [customAmount, setCustomAmount] = useState("");
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
-  const [email, setEmail] = useState("");
-  const [note, setNote] = useState("");
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [scriptReady, setScriptReady] = useState(false);
 
+  const {
+    register,
+    control,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<PaystackDonationValues>({
+    resolver: zodResolver(paystackDonationSchema),
+    mode: "onTouched",
+    defaultValues: {
+      firstName: "",
+      lastName: "",
+      email: "",
+      amount: supportConfig.presetAmounts[1],
+      note: "",
+    },
+  });
+
   const paystackKey = supportConfig.paystackPublicKey;
 
-  function handlePay() {
+  const onSubmit = handleSubmit((values) => {
     setError(null);
     setSuccess(null);
-
-    if (!email || amount < 100) {
-      setError("Please enter a valid email and amount of at least ₦100.");
-      return;
-    }
 
     if (!paystackKey) {
       setError(
@@ -53,28 +67,30 @@ export function PaystackForm() {
 
     const handler = window.PaystackPop.setup({
       key: paystackKey,
-      email,
-      amount: amount * 100,
+      email: values.email,
+      amount: values.amount * 100,
       currency: supportConfig.currency,
       ref: reference,
       metadata: {
         custom_fields: [
-          { display_name: "First Name", variable_name: "first_name", value: firstName },
-          { display_name: "Last Name", variable_name: "last_name", value: lastName },
-          { display_name: "Note", variable_name: "note", value: note },
+          { display_name: "First Name", variable_name: "first_name", value: values.firstName },
+          { display_name: "Last Name", variable_name: "last_name", value: values.lastName },
+          { display_name: "Note", variable_name: "note", value: values.note ?? "" },
         ],
       },
       onClose: () => setLoading(false),
       callback: (response) => {
         setLoading(false);
         setSuccess(
-          `Thank you! Your gift of ${formatNaira(amount)} was received. Reference: ${response.reference}`,
+          `Thank you! Your gift of ${formatNaira(values.amount)} was received. Reference: ${response.reference}`,
         );
       },
     });
 
     handler.openIframe();
-  }
+  });
+
+  const amountValue = useWatch({ control, name: "amount" });
 
   return (
     <>
@@ -84,7 +100,7 @@ export function PaystackForm() {
         onReady={() => setScriptReady(true)}
       />
 
-      <div className="space-y-5">
+      <form className="space-y-5" onSubmit={onSubmit} noValidate>
         <div className="flex items-center gap-3 rounded-2xl border border-primary/15 bg-gradient-to-r from-primary/5 via-secondary/40 to-bloom-green/5 px-4 py-3">
           <span className="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
             <CreditCard className="size-5" />
@@ -105,7 +121,8 @@ export function PaystackForm() {
         )}
 
         {error && (
-          <p className="rounded-2xl border border-destructive/20 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+          <p className="flex items-start gap-2 rounded-2xl border border-destructive/20 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+            <AlertCircle className="mt-0.5 size-4 shrink-0" />
             {error}
           </p>
         )}
@@ -117,11 +134,12 @@ export function PaystackForm() {
             </label>
             <Input
               id="pay-first-name"
-              value={firstName}
-              onChange={(event) => setFirstName(event.target.value)}
+              autoComplete="given-name"
               className="h-11 rounded-xl"
-              required
+              aria-invalid={Boolean(errors.firstName)}
+              {...register("firstName")}
             />
+            <FieldError message={errors.firstName?.message} />
           </div>
           <div>
             <label htmlFor="pay-last-name" className="mb-2 block text-sm font-medium">
@@ -129,11 +147,12 @@ export function PaystackForm() {
             </label>
             <Input
               id="pay-last-name"
-              value={lastName}
-              onChange={(event) => setLastName(event.target.value)}
+              autoComplete="family-name"
               className="h-11 rounded-xl"
-              required
+              aria-invalid={Boolean(errors.lastName)}
+              {...register("lastName")}
             />
+            <FieldError message={errors.lastName?.message} />
           </div>
         </div>
 
@@ -144,20 +163,32 @@ export function PaystackForm() {
           <Input
             id="pay-email"
             type="email"
-            value={email}
-            onChange={(event) => setEmail(event.target.value)}
+            autoComplete="email"
             className="h-11 rounded-xl"
             placeholder="you@example.com"
-            required
+            aria-invalid={Boolean(errors.email)}
+            {...register("email")}
           />
+          <FieldError message={errors.email?.message} />
         </div>
 
-        <AmountPicker
-          amount={amount}
-          onAmountChange={setAmount}
-          customAmount={customAmount}
-          onCustomAmountChange={setCustomAmount}
-        />
+        <div>
+          <Controller
+            control={control}
+            name="amount"
+            render={({ field, fieldState }) => (
+              <>
+                <AmountPicker
+                  amount={field.value}
+                  onAmountChange={field.onChange}
+                  customAmount={customAmount}
+                  onCustomAmountChange={setCustomAmount}
+                />
+                <FieldError message={fieldState.error?.message} />
+              </>
+            )}
+          />
+        </div>
 
         <div>
           <label htmlFor="pay-note" className="mb-2 block text-sm font-medium">
@@ -165,18 +196,18 @@ export function PaystackForm() {
           </label>
           <Textarea
             id="pay-note"
-            value={note}
-            onChange={(event) => setNote(event.target.value)}
             className="min-h-[88px] rounded-xl"
             placeholder="In honor of, prayer request, or designation..."
+            aria-invalid={Boolean(errors.note)}
+            {...register("note")}
           />
+          <FieldError message={errors.note?.message} />
         </div>
 
         <Button
-          type="button"
+          type="submit"
           size="lg"
           className="h-12 w-full rounded-full text-base"
-          onClick={handlePay}
           disabled={loading || !scriptReady}
         >
           {loading ? (
@@ -186,12 +217,12 @@ export function PaystackForm() {
             </>
           ) : (
             <>
-              Pay {formatNaira(amount)}
+              Pay {formatNaira(amountValue)}
               <CreditCard className="size-4" />
             </>
           )}
         </Button>
-      </div>
+      </form>
     </>
   );
 }

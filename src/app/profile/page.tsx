@@ -178,7 +178,7 @@ export default function ProfilePage() {
 												</ul>
 											</div>
 											<Button asChild className="shrink-0 rounded-full">
-												<Link href="/calendar">View Details</Link>
+												<Link href={`/events/${event.id}`}>View Details</Link>
 											</Button>
 										</div>
 										<MapEmbed location={event.location} className="h-40" />

@@ -3,6 +3,7 @@ import Image from "next/image";
 import { PageHeader } from "@/components/ui/page-header";
 import { Section, SectionHeader } from "@/components/ui/section";
 import { Card } from "@/components/ui/card";
+import { MediaCard } from "@/components/ui/media-card";
 import { Badge } from "@/components/ui/badge";
 import { FadeIn } from "@/components/motion/fade-in";
 import { pillars } from "@/lib/constants";
@@ -145,26 +146,18 @@ export default function AboutPage() {
           title="Volunteer · Clean · Spread the Word"
           description="Three pillars. One mission. Everything we do flows from these commitments."
         />
-        <div className="grid gap-10 md:grid-cols-3 md:gap-8">
+        <div className="grid gap-6 md:grid-cols-3 md:gap-8">
           {pillars.map((pillar, index) => (
             <FadeIn key={pillar.title} delay={index * 0.1}>
-              <div className="text-center">
-                <div className="relative mx-auto mb-5 aspect-square w-full max-w-[220px] overflow-hidden rounded-3xl shadow-xl ring-4 ring-primary/10">
-                  <Image
-                    src={pillarImageMap[pillar.title]}
-                    alt={`${pillar.title} at Bloom Outreach`}
-                    fill
-                    sizes="220px"
-                    className="object-cover transition-transform duration-700 hover:scale-110"
-                  />
-                </div>
-                <h3 className="font-heading text-xl font-semibold">
-                  {pillar.title}
-                </h3>
-                <p className="mt-3 leading-relaxed text-muted-foreground">
-                  {pillar.description}
-                </p>
-              </div>
+              <MediaCard
+                image={pillarImageMap[pillar.title]}
+                imageAlt={`${pillar.title} at Bloom Outreach`}
+                eyebrow={pillar.category}
+                title={pillar.title}
+                description={pillar.description}
+                sizes="(max-width: 768px) 100vw, 33vw"
+                className="h-full"
+              />
             </FadeIn>
           ))}
         </div>

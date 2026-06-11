@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import Image from "next/image";
 import { Calendar, HandHeart, Megaphone, Users } from "lucide-react";
 import { PageHeader } from "@/components/ui/page-header";
 import { Section, SectionHeader } from "@/components/ui/section";
 import { Card } from "@/components/ui/card";
+import { MediaCard } from "@/components/ui/media-card";
 import { Button } from "@/components/ui/button";
 import { FadeIn } from "@/components/motion/fade-in";
 import { VolunteerSpotlightSection } from "@/components/sections/volunteer-spotlight-section";
@@ -57,29 +57,19 @@ export default function GetInvolvedPage() {
         <div className="grid gap-6 md:grid-cols-3 md:gap-8">
           {involvementOptions.map((option, index) => (
             <FadeIn key={option.title} delay={index * 0.1}>
-              <Card className="group overflow-hidden p-0">
-                <div className="relative aspect-[16/10] overflow-hidden">
-                  <Image
-                    src={option.image}
-                    alt={option.title}
-                    fill
-                    sizes="(max-width: 768px) 100vw, 33vw"
-                    className="object-cover transition-transform duration-700 group-hover:scale-110"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
-                </div>
-                <div className="flex flex-col p-6 md:p-8">
-                  <h3 className="font-heading text-xl font-semibold md:text-2xl">
-                    {option.title}
-                  </h3>
-                  <p className="mt-3 flex-1 leading-relaxed text-muted-foreground">
-                    {option.description}
-                  </p>
-                  <Button asChild className="mt-6 w-full rounded-full">
-                    <Link href="/contact">{option.cta}</Link>
-                  </Button>
-                </div>
-              </Card>
+              <MediaCard
+                image={option.image}
+                imageAlt={option.title}
+                eyebrow={option.category}
+                title={option.title}
+                description={option.description}
+                sizes="(max-width: 768px) 100vw, 33vw"
+                className="h-full"
+              >
+                <Button asChild className="mt-4 w-full rounded-full">
+                  <Link href="/contact">{option.cta}</Link>
+                </Button>
+              </MediaCard>
             </FadeIn>
           ))}
         </div>
