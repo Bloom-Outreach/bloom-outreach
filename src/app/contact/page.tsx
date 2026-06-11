@@ -5,6 +5,7 @@ import { Section } from "@/components/ui/section";
 import { Badge } from "@/components/ui/badge";
 import { FadeIn } from "@/components/motion/fade-in";
 import { ContactForm } from "@/components/sections/contact-form";
+import { MapEmbed } from "@/components/ui/map-embed";
 import { SocialLinks } from "@/components/layout/social-links";
 import { siteConfig } from "@/lib/constants";
 import { siteImages } from "@/lib/images";
@@ -79,18 +80,27 @@ export default function ContactPage() {
                 );
               })}
               <li>
-                <div className="flex items-start gap-4 rounded-2xl border border-border/50 bg-card p-4">
-                  <span className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                    <MapPin className="size-5" />
-                  </span>
-                  <span>
-                    <span className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                      Address
+                <div className="overflow-hidden rounded-2xl border border-border/50 bg-card">
+                  <div className="flex items-start gap-4 p-4">
+                    <span className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                      <MapPin className="size-5" />
                     </span>
-                    <span className="mt-0.5 block text-foreground">
-                      {siteConfig.address}
+                    <span>
+                      <span className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                        Address
+                      </span>
+                      <span className="mt-0.5 block text-foreground">
+                        {siteConfig.address}
+                      </span>
                     </span>
-                  </span>
+                  </div>
+                  <div className="border-t border-border/50 p-3 pt-0">
+                    <MapEmbed
+                      location={siteConfig.address}
+                      title="Bloom Outreach location on Google Maps"
+                      className="h-52"
+                    />
+                  </div>
                 </div>
               </li>
             </ul>

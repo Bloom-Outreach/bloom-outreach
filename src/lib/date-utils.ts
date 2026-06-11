@@ -27,10 +27,15 @@ export function formatMonthYear(year: number, month: number) {
   });
 }
 
-export function getCalendarDays(year: number, month: number) {
+export function isSaturday(date: Date) {
+  return date.getDay() === 6;
+}
+
+/** Calendar grid with Saturday as the first column (not Sunday). */
+export function getSaturdayCalendarDays(year: number, month: number) {
   const firstDay = new Date(year, month, 1);
   const lastDay = new Date(year, month + 1, 0);
-  const startOffset = firstDay.getDay();
+  const startOffset = (firstDay.getDay() + 1) % 7;
   const daysInMonth = lastDay.getDate();
 
   const days: (Date | null)[] = [];
@@ -44,4 +49,9 @@ export function getCalendarDays(year: number, month: number) {
   }
 
   return days;
+}
+
+/** @deprecated Use getSaturdayCalendarDays for Bloom volunteering calendars. */
+export function getCalendarDays(year: number, month: number) {
+  return getSaturdayCalendarDays(year, month);
 }

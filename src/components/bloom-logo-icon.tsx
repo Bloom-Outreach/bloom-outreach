@@ -14,7 +14,7 @@ export function BloomLogoIcon({
 	return (
 		<span
 			className={cn(
-        "flex size-full items-center justify-center rounded-xl text-[1.5rem] leading-none",
+				"flex size-full items-center justify-center rounded-xl text-[1.5rem] leading-none",
 				// isLight ? "bg-white/10" : "bg-primary/10",
 				className,
 			)}

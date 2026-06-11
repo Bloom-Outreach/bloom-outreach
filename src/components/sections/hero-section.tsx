@@ -11,9 +11,9 @@ import { siteConfig } from "@/lib/constants";
 import { siteImages } from "@/lib/images";
 
 const stats = [
-	{ value: "150+", label: "Volunteers" },
-	{ value: "50+", label: "Cleanups" },
-	{ value: "24", label: "Events / yr" },
+	{ value: "15+", label: "Volunteers" },
+	{ value: "1+", label: "Cleanups" },
+	{ value: "12", label: "Events / yr" },
 ] as const;
 
 export function HeroSection() {
