@@ -5,6 +5,7 @@ import { Section } from "@/components/ui/section";
 import { Badge } from "@/components/ui/badge";
 import { FadeIn } from "@/components/motion/fade-in";
 import { ContactForm } from "@/components/sections/contact-form";
+import { SocialLinks } from "@/components/layout/social-links";
 import { siteConfig } from "@/lib/constants";
 import { siteImages } from "@/lib/images";
 
@@ -93,6 +94,13 @@ export default function ContactPage() {
                 </div>
               </li>
             </ul>
+
+            <div className="mt-8">
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                Follow Us
+              </h3>
+              <SocialLinks variant="card" className="mt-4 flex-col sm:flex-row" />
+            </div>
           </FadeIn>
 
           <FadeIn delay={0.1} className="lg:col-span-3">

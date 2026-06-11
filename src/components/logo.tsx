@@ -12,8 +12,8 @@ export function Logo({ className, variant = "default" }: LogoProps) {
   const isLight = variant === "light";
 
   return (
-    <Link href="/" className={cn("group flex items-center gap-3", className)}>
-      <span className="flex size-10 shrink-0 items-center justify-center transition-transform duration-300 group-hover:scale-105">
+    <Link href="/" className={cn("group flex items-center gap-1.5", className)}>
+      <span className="flex size-9 shrink-0 items-center justify-center transition-transform duration-300 group-hover:scale-105">
         <BloomLogoIcon variant={variant} />
       </span>
       <span

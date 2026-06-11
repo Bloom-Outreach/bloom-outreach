@@ -1,3 +1,4 @@
+import { HomeScrollbarHide } from "@/components/home-scrollbar-hide";
 import { HeroSection } from "@/components/sections/hero-section";
 import { MissionSection } from "@/components/sections/mission-section";
 import { PillarsSection } from "@/components/sections/pillars-section";
@@ -9,6 +10,7 @@ import { CtaSection } from "@/components/sections/cta-section";
 export default function Home() {
   return (
     <>
+      <HomeScrollbarHide />
       <HeroSection />
       <MissionSection />
       <PillarsSection />

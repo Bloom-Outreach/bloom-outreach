@@ -9,7 +9,32 @@ export const siteConfig = {
   email: "hello@bloomoutreach.org",
   phone: "(555) 123-4567",
   address: "123 Hope Street, Community City, ST 12345",
+  social: {
+    instagram: {
+      handle: "bloomoutreachng",
+      href: "https://www.instagram.com/bloomoutreachng",
+    },
+    tiktok: {
+      handle: "bloomoutreachng",
+      href: "https://www.tiktok.com/@bloomoutreachng",
+    },
+  },
 } as const;
+
+export const socialLinks = [
+  {
+    platform: "instagram" as const,
+    label: "Instagram",
+    handle: siteConfig.social.instagram.handle,
+    href: siteConfig.social.instagram.href,
+  },
+  {
+    platform: "tiktok" as const,
+    label: "TikTok",
+    handle: siteConfig.social.tiktok.handle,
+    href: siteConfig.social.tiktok.href,
+  },
+] as const;
 
 export const navLinks = [
   { href: "/", label: "Home" },

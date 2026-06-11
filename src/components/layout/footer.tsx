@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Mail, MapPin, Phone } from "lucide-react";
 import { Logo } from "@/components/logo";
+import { SocialLinks } from "@/components/layout/social-links";
 import { navLinks, siteConfig } from "@/lib/constants";
 
 export function Footer() {
@@ -18,6 +19,12 @@ export function Footer() {
             <p className="mt-5 max-w-sm text-sm leading-relaxed text-white/70">
               {siteConfig.description}
             </p>
+            <div className="mt-6">
+              <h3 className="mb-3 text-xs font-semibold uppercase tracking-widest text-white/90">
+                Follow Us
+              </h3>
+              <SocialLinks />
+            </div>
           </div>
 
           <div className="lg:col-span-2 lg:col-start-6">

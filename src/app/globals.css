@@ -7,9 +7,9 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
+  --font-sans: var(--font-dm-sans);
   --font-mono: var(--font-geist-mono);
-  --font-heading: var(--font-playfair);
+  --font-heading: var(--font-fraunces);
   /* Brand palette */
   --color-bloom-wine: #7a3349;
   --color-bloom-deep-rose: #7a3349;
@@ -156,6 +156,17 @@
 }
 
 @layer utilities {
+  .scrollbar-hide {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+    width: 0;
+    height: 0;
+  }
+
   .text-balance {
     text-wrap: balance;
   }

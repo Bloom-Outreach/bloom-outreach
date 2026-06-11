@@ -49,7 +49,7 @@ export function Navbar() {
   return (
     <header
       className={cn(
-        "sticky top-0 z-50 border-b transition-[background-color,box-shadow,border-color,backdrop-filter] duration-300",
+        "sticky top-0 z-[60] border-b transition-[background-color,box-shadow,border-color,backdrop-filter] duration-300",
         scrolled || !isHome
           ? "border-border/30 bg-background/70 shadow-sm backdrop-blur-xl"
           : "border-transparent bg-transparent"
@@ -150,7 +150,7 @@ export function Navbar() {
 
       <div
         className={cn(
-          "fixed inset-0 top-16 z-40 bg-black/20 backdrop-blur-[2px] transition-opacity duration-300 md:hidden",
+          "fixed inset-0 z-40 bg-black/30 backdrop-blur-[2px] transition-opacity duration-300 md:hidden",
           mobileOpen ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-0"
         )}
         onClick={closeMobile}
@@ -158,21 +158,29 @@ export function Navbar() {
       />
 
       <div
+        id="mobile-nav"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Mobile navigation"
         className={cn(
-          "absolute left-0 right-0 top-full z-50 overflow-hidden border-b border-border/60 bg-background/95 shadow-lg backdrop-blur-xl transition-[max-height,opacity] duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] md:hidden",
-          mobileOpen ? "max-h-[calc(100dvh-4rem)] opacity-100" : "max-h-0 opacity-0"
+          "fixed inset-y-0 left-0 z-50 flex w-[min(100%,18rem)] flex-col border-r border-border/60 bg-background/98 shadow-2xl backdrop-blur-xl transition-transform duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] md:hidden",
+          mobileOpen ? "translate-x-0" : "-translate-x-full pointer-events-none"
         )}
         aria-hidden={!mobileOpen}
       >
-        <ul className="flex max-h-[calc(100dvh-4rem)] flex-col gap-1 overflow-y-auto px-4 py-4">
+        <div className="flex h-16 shrink-0 items-center border-b border-border/50 px-4">
+          <Logo variant="default" />
+        </div>
+
+        <ul className="flex flex-1 flex-col gap-1 overflow-y-auto px-3 py-4">
           {navLinks.map((link, index) => (
             <li
               key={link.href}
               className={cn(
                 "transition-[opacity,transform] duration-300 ease-out",
                 mobileOpen
-                  ? "translate-y-0 opacity-100"
-                  : "-translate-y-2 opacity-0"
+                  ? "translate-x-0 opacity-100"
+                  : "-translate-x-3 opacity-0"
               )}
               style={{ transitionDelay: mobileOpen ? `${index * 40 + 50}ms` : "0ms" }}
             >
@@ -194,8 +202,8 @@ export function Navbar() {
             className={cn(
               "transition-[opacity,transform] duration-300 ease-out",
               mobileOpen
-                ? "translate-y-0 opacity-100"
-                : "-translate-y-2 opacity-0"
+                ? "translate-x-0 opacity-100"
+                : "-translate-x-3 opacity-0"
             )}
             style={{
               transitionDelay: mobileOpen
@@ -221,8 +229,8 @@ export function Navbar() {
             className={cn(
               "transition-[opacity,transform] duration-300 ease-out",
               mobileOpen
-                ? "translate-y-0 opacity-100"
-                : "-translate-y-2 opacity-0"
+                ? "translate-x-0 opacity-100"
+                : "-translate-x-3 opacity-0"
             )}
             style={{
               transitionDelay: mobileOpen
@@ -242,8 +250,8 @@ export function Navbar() {
             className={cn(
               "pt-2 transition-[opacity,transform] duration-300 ease-out",
               mobileOpen
-                ? "translate-y-0 opacity-100"
-                : "-translate-y-2 opacity-0"
+                ? "translate-x-0 opacity-100"
+                : "-translate-x-3 opacity-0"
             )}
             style={{
               transitionDelay: mobileOpen ? `${navLinks.length * 40 + 130}ms` : "0ms",
