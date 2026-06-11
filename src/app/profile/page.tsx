@@ -17,6 +17,10 @@ import { Card } from "@/components/ui/card";
 import { FadeIn } from "@/components/motion/fade-in";
 import { ProfileNav } from "@/components/profile/profile-nav";
 import { ProfileSidebar } from "@/components/profile/profile-sidebar";
+import {
+  VolunteerFocusChart,
+  VolunteerHoursChart,
+} from "@/components/dashboard/volunteer-charts";
 import { mockVolunteer } from "@/lib/mock-volunteer";
 import { siteImages } from "@/lib/images";
 import { cn } from "@/lib/utils";
@@ -95,6 +99,33 @@ export default function ProfilePage() {
                     </Card>
                   );
                 })}
+              </div>
+            </FadeIn>
+
+            <FadeIn delay={0.12}>
+              <div className="grid gap-6 md:grid-cols-2">
+                <Card>
+                  <div className="mb-4">
+                    <Badge variant="soft" className="mb-2">
+                      My Service
+                    </Badge>
+                    <h3 className="font-heading text-lg font-semibold">
+                      Hours This Year
+                    </h3>
+                  </div>
+                  <VolunteerHoursChart />
+                </Card>
+                <Card>
+                  <div className="mb-4">
+                    <Badge variant="soft" className="mb-2">
+                      Focus
+                    </Badge>
+                    <h3 className="font-heading text-lg font-semibold">
+                      Events by Pillar
+                    </h3>
+                  </div>
+                  <VolunteerFocusChart />
+                </Card>
               </div>
             </FadeIn>
 

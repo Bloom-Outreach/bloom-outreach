@@ -17,7 +17,7 @@ export default function CalendarPage() {
     <>
       <PageHeader
         title="Upcoming Events"
-        description="Join us to volunteer, clean, or spread the word. Find an upcoming event and come serve with us."
+        description="Find an upcoming event and sign up to serve. Your sign-up helps us know who's available."
         image={siteImages.pageHeaders.calendar}
         eyebrow="Calendar"
       />
@@ -32,8 +32,8 @@ export default function CalendarPage() {
             Want to help at an event?
           </h2>
           <p className="mx-auto mt-4 max-w-xl text-lg text-muted-foreground">
-            New volunteers are always welcome. Reach out to RSVP, ask questions,
-            or learn how you can serve at our next outreach.
+            New volunteers are always welcome. Sign up on an event above so we
+            know you&apos;re coming — or get involved to join the team.
           </p>
           <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <Button asChild size="lg" className="rounded-full px-7">

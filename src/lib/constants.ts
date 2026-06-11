@@ -356,7 +356,8 @@ export const upcomingEvents = [
     startTime: "8:00 AM",
     endTime: "12:00 PM",
     location: "Oakwood Neighborhood — meet at corner of 5th & Elm",
-    category: "Cleaning",
+    category: "Volunteering",
+    volunteersSignedUp: 14,
   },
   {
     id: 2,
@@ -368,6 +369,7 @@ export const upcomingEvents = [
     endTime: "11:30 AM",
     location: "Bloom Outreach Center, 123 Hope Street",
     category: "Volunteering",
+    volunteersSignedUp: 9,
   },
   {
     id: 3,
@@ -378,7 +380,8 @@ export const upcomingEvents = [
     startTime: "9:00 AM",
     endTime: "1:00 PM",
     location: "Riverside Community Park",
-    category: "Spreading the Word",
+    category: "Volunteering",
+    volunteersSignedUp: 18,
   },
   {
     id: 4,
@@ -389,7 +392,8 @@ export const upcomingEvents = [
     startTime: "8:00 AM",
     endTime: "12:00 PM",
     location: "Downtown Main Street",
-    category: "Cleaning",
+    category: "Volunteering",
+    volunteersSignedUp: 11,
   },
   {
     id: 5,
@@ -401,6 +405,7 @@ export const upcomingEvents = [
     endTime: "3:00 PM",
     location: "Bloom Outreach Center, 123 Hope Street",
     category: "Volunteering",
+    volunteersSignedUp: 22,
   },
   {
     id: 6,
@@ -411,7 +416,8 @@ export const upcomingEvents = [
     startTime: "6:00 PM",
     endTime: "8:00 PM",
     location: "Riverside Community Park",
-    category: "Spreading the Word",
+    category: "Volunteering",
+    volunteersSignedUp: 16,
   },
   {
     id: 7,
@@ -422,7 +428,8 @@ export const upcomingEvents = [
     startTime: "7:00 AM",
     endTime: "11:00 AM",
     location: "Lakeview Beach Parking Lot",
-    category: "Cleaning",
+    category: "Volunteering",
+    volunteersSignedUp: 13,
   },
   {
     id: 8,
@@ -433,7 +440,8 @@ export const upcomingEvents = [
     startTime: "10:00 AM",
     endTime: "12:00 PM",
     location: "Grace Community Church, Room 101",
-    category: "Spreading the Word",
+    category: "Volunteering",
+    volunteersSignedUp: 7,
   },
 ] as const;
 

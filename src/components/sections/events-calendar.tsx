@@ -1,7 +1,6 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import Link from "next/link";
 import {
   CalendarDays,
   ChevronLeft,
@@ -9,6 +8,7 @@ import {
   Clock,
   MapPin,
 } from "lucide-react";
+import { EventVolunteerSignup } from "@/components/events/event-volunteer-signup";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { upcomingEvents, type UpcomingEvent } from "@/lib/constants";
@@ -23,12 +23,6 @@ import { cn } from "@/lib/utils";
 
 const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"] as const;
 
-const categoryStyles: Record<UpcomingEvent["category"], string> = {
-  Volunteering: "bg-primary/10 text-primary",
-  Cleaning: "badge-cleaning",
-  "Spreading the Word": "badge-placards",
-};
-
 function dateKey(date: Date) {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
 }
@@ -39,12 +33,9 @@ function EventCard({ event }: { event: UpcomingEvent }) {
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <span
-            className={cn(
-              "inline-block rounded-full px-2.5 py-0.5 text-xs font-medium",
-              categoryStyles[event.category]
-            )}
+            className="inline-block rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary"
           >
-            {event.category}
+            Volunteering
           </span>
           <h3 className="mt-2 font-heading text-xl font-semibold">
             {event.title}
@@ -81,9 +72,7 @@ function EventCard({ event }: { event: UpcomingEvent }) {
         </li>
       </ul>
 
-      <Button asChild className="mt-auto w-full sm:w-auto">
-        <Link href="/contact">RSVP / Learn More</Link>
-      </Button>
+      <EventVolunteerSignup event={event} />
     </Card>
   );
 }
