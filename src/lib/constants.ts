@@ -86,7 +86,7 @@ export const involvementOptions = [
 		category: "Volunteering" as const,
 		description:
 			"Join our team at cleanup days and outreach events. No experience needed — just come ready to serve.",
-		cta: "Sign Up to Volunteer",
+		cta: "Join Us",
 		image: media.involvement.volunteer,
 	},
 	{

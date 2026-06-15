@@ -30,17 +30,17 @@ const VOLUNTEERING = [
 	"1582213782179-e0d53f98f2ca", // volunteers in vests
 	"1542838132-92c53300491e", // teamwork outdoors
 	"1593113616828-6f22bca04804", // donation drive
-	"1607113761670-c1f3c6ce6d54", // volunteer crew planning
+	"1593113646773-028c64a8f1b8", // volunteer crew planning
 ] as const;
 
 /** Cleaning the neighborhood. */
 const CLEANING = [
-	"1604187355105-ea2acbe44b0e", // park clean-up crew
+	"1542621334-a254cf47733d", // park clean-up crew
 	"1572177812156-58036aae439c", // bag of collected litter
 	"1611273426858-450d8e3c9fce", // sweeping the streets
-	"1611273426858-450d8e3c9fce", // path being cleared
+	"1532629345422-7515f3d16bb6", // path being cleared
 	"1542838132-92c53300491e", // street cleaners at sunrise
-	"1542621334-a254cf47733d", // outdoor sweep
+	"1574870111867-089730e5a72b", // outdoor sweep
 ] as const;
 
 /** Sharing the gospel and prayer. */
@@ -95,25 +95,25 @@ export const siteImages = {
 		height: 1200,
 	},
 	mission: {
-		src: unsplash(VOLUNTEERING[2], 1200, 900),
+		src: "/images/about-us/bloom-children-flowers.webp",
 		alt: "Volunteers joining hands to serve",
 		width: 1200,
 		height: 900,
 	},
 	cta: {
-		src: unsplash(COMMUNITY[1], 1600, 900),
+		src: "/images/get-involved/love-hand-bloom.webp",
 		alt: "Bloom Outreach volunteer team",
 		width: 1600,
 		height: 900,
 	},
 	aboutStory: {
-		src: "/images/resend-code/reset-password.webp",
+		src: "/images/about-us/about-bloom.webp",
 		alt: "Bloom volunteers cleaning a public park",
 		width: 1200,
 		height: 900,
 	},
 	aboutCommunity: {
-		src: unsplash(VOLUNTEERING[1], 1200, 800),
+		src: "/images/about-us/together-bloom.webp",
 		alt: "Volunteers serving outdoors together",
 		width: 1200,
 		height: 800,
@@ -131,6 +131,12 @@ export const siteImages = {
 			width: 1535,
 			height: 1024,
 		},
+		joinUs: {
+			src: "/images/sign-up/sign-up.webp",
+			alt: "Volunteers joining hands to serve together",
+			width: 1535,
+			height: 1024,
+		},
 		forgot: {
 			src: "/images/forgot-password/forget-password.webp",
 			alt: "Light breaking through — a sign of hope",
@@ -140,32 +146,33 @@ export const siteImages = {
 	},
 	pageHeaders: {
 		about: "/images/resend-code/reset-password.webp",
-		getInvolved: unsplash(VOLUNTEERING[5], 1600, 900),
-		support: unsplash(COMMUNITY[1], 1600, 900),
+		getInvolved: "/images/get-involved/love-hand-bloom.webp",
+		support: "/images/support/support-bloom-hero-cropped.jpg",
 		gallery: unsplash(CLEANING[0], 1600, 900),
 		videos: unsplash(COMMUNITY[0], 1600, 900),
 		contact: unsplash(GOSPEL[2], 1600, 900),
 		calendar: "/images/event/events.webp",
-		profile: unsplash(VOLUNTEERING[1], 1600, 900),
+		profile: "/images/profile/volunter-pro.webp",
+		streaks: "/images/get-involved/together-bloom.webp",
 		default: unsplash(VOLUNTEERING[0], 1600, 900),
 	},
 	pillars: {
-		volunteer: unsplash(VOLUNTEERING[0], 800, 600),
-		clean: unsplash(CLEANING[0], 800, 600),
-		spreadTheWord: unsplash(GOSPEL[0], 800, 600),
+		volunteer: "/images/about-us/community-service.webp",
+		clean: "/images/about-us/bloom-community-clean-up.webp",
+		spreadTheWord: "/images/about-us/spread-the-word.webp",
 	},
 } as const;
 
 export const media = {
 	involvement: {
-		volunteer: unsplash(VOLUNTEERING[0], 800, 600),
-		clean: unsplash(CLEANING[0], 800, 600),
-		spreadTheWord: unsplash(GOSPEL[0], 800, 600),
+		volunteer: "/images/get-involved/hand-craft-images.webp",
+		clean: "/images/get-involved/tools.webp",
+		spreadTheWord: "/images/get-involved/love-placards.webp",
 	},
 	support: {
-		oneTime: unsplash(COMMUNITY[1], 800, 600),
+		oneTime: "/images/support/support-bloom-hero.webp",
 		monthly: unsplash(VOLUNTEERING[3], 800, 600),
-		supplies: unsplash(CLEANING[1], 800, 600),
-		church: unsplash(GOSPEL[5], 800, 600),
+		supplies: "/images/support/support-bloom-hero.webp",
+		church: "/images/support/support-bloom-church.webp",
 	},
 } as const;

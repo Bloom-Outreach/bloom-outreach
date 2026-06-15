@@ -7,9 +7,10 @@ import {
   ArrowRight,
   Heart,
   LogIn,
-  User,
   X,
 } from "lucide-react";
+import { useAuth } from "@/components/auth/auth-provider";
+import { VolunteerAvatar } from "@/components/dashboard/volunteer-avatar";
 import { Logo } from "@/components/logo";
 import { AnimatedHamburger } from "@/components/layout/animated-hamburger";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
@@ -19,6 +20,7 @@ import { cn } from "@/lib/utils";
 
 export function Navbar() {
   const pathname = usePathname();
+  const { isSignedIn, user, isLoading: authLoading } = useAuth();
   const isHome = pathname === "/";
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -107,30 +109,35 @@ export function Navbar() {
               "hidden rounded-full px-3 py-2 text-sm font-medium transition-colors sm:inline-block",
               useLightNav
                 ? "text-white/90 hover:bg-white/10 hover:text-white"
-                : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                : "text-muted-foreground hover:bg-muted hover:text-foreground",
+              (isSignedIn || authLoading) && "hidden",
             )}
           >
             Sign In
           </Link>
 
-          <Link
-            href="/profile"
-            aria-label="My profile"
-            className={cn(
-              "inline-flex size-10 items-center justify-center rounded-full transition-colors",
-              pathname === "/profile" || pathname === "/settings"
-                ? useLightNav
-                  ? "bg-white/20 text-white"
-                  : "bg-primary/10 text-primary"
-                : useLightNav
-                  ? "text-white hover:bg-white/10"
-                  : "text-muted-foreground hover:bg-muted hover:text-foreground"
-            )}
-          >
-            <User className="size-5" strokeWidth={1.75} />
-          </Link>
+          {isSignedIn && user ? (
+            <Link
+              href="/profile"
+              aria-label="My profile"
+              className={cn(
+                "inline-flex items-center justify-center rounded-full transition-opacity hover:opacity-90",
+                pathname === "/profile" ||
+                  pathname === "/settings" ||
+                  pathname === "/dashboard"
+                  ? "ring-2 ring-bloom-pink/60 ring-offset-2 ring-offset-transparent"
+                  : undefined,
+              )}
+            >
+              <VolunteerAvatar
+                user={user}
+                size="sm"
+                className={useLightNav ? "ring-white/40" : undefined}
+              />
+            </Link>
+          ) : null}
 
-          <div className="hidden md:block">
+          <div className={cn("hidden md:block", (isSignedIn || authLoading) && "hidden")}>
             <Button
               asChild
               size="lg"
@@ -139,7 +146,7 @@ export function Navbar() {
                 useLightNav && "bg-white text-primary hover:bg-white/90"
               )}
             >
-              <Link href="/get-involved">Join Us</Link>
+              <Link href="/join-us">Join Us</Link>
             </Button>
           </div>
 
@@ -271,31 +278,50 @@ export function Navbar() {
               Your account
             </p>
             <ul className="flex flex-col gap-1">
-              <li>
-                <Link
-                  href="/profile"
-                  onClick={closeMobile}
-                  className={cn(
-                    "flex items-center gap-3 rounded-xl px-4 py-3 text-base font-medium transition-colors duration-200",
-                    pathname === "/profile"
-                      ? "bg-primary/10 text-primary"
-                      : "text-foreground hover:bg-muted"
-                  )}
-                >
-                  <User className="size-5" />
-                  My Profile
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/sign-in"
-                  onClick={closeMobile}
-                  className="flex items-center gap-3 rounded-xl px-4 py-3 text-base font-medium text-foreground transition-colors duration-200 hover:bg-muted"
-                >
-                  <LogIn className="size-5" />
-                  Sign In
-                </Link>
-              </li>
+              {isSignedIn && user ? (
+                <li>
+                  <Link
+                    href="/profile"
+                    onClick={closeMobile}
+                    className={cn(
+                      "flex items-center gap-3 rounded-xl px-4 py-3 text-base font-medium transition-colors duration-200",
+                      pathname === "/profile" || pathname === "/dashboard"
+                        ? "bg-primary/10 text-primary"
+                        : "text-foreground hover:bg-muted",
+                    )}
+                  >
+                    <VolunteerAvatar user={user} size="sm" />
+                    My Profile
+                  </Link>
+                </li>
+              ) : (
+                <>
+                  <li>
+                    <Link
+                      href="/profile"
+                      onClick={closeMobile}
+                      className={cn(
+                        "flex items-center gap-3 rounded-xl px-4 py-3 text-base font-medium transition-colors duration-200",
+                        pathname === "/profile"
+                          ? "bg-primary/10 text-primary"
+                          : "text-foreground hover:bg-muted",
+                      )}
+                    >
+                      My Profile
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      href="/sign-in"
+                      onClick={closeMobile}
+                      className="flex items-center gap-3 rounded-xl px-4 py-3 text-base font-medium text-foreground transition-colors duration-200 hover:bg-muted"
+                    >
+                      <LogIn className="size-5" />
+                      Sign In
+                    </Link>
+                  </li>
+                </>
+              )}
             </ul>
           </div>
         </nav>
@@ -312,12 +338,27 @@ export function Navbar() {
               : "0ms",
           }}
         >
-          <Button asChild className="h-12 w-full rounded-full text-base" size="lg">
-            <Link href="/get-involved" onClick={closeMobile}>
+          <Button
+            asChild
+            className={cn(
+              "h-12 w-full rounded-full text-base",
+              (isSignedIn || authLoading) && "hidden",
+            )}
+            size="lg"
+          >
+            <Link href="/join-us" onClick={closeMobile}>
               Join Us
               <ArrowRight className="size-4" />
             </Link>
           </Button>
+          {isSignedIn && user ? (
+            <Button asChild className="h-12 w-full rounded-full text-base" size="lg">
+              <Link href="/dashboard" onClick={closeMobile}>
+                My Dashboard
+                <ArrowRight className="size-4" />
+              </Link>
+            </Button>
+          ) : null}
         </div>
       </aside>
     </header>

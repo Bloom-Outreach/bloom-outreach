@@ -5,24 +5,25 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowRight, Loader2, UserPlus } from "lucide-react";
+import { useAuth } from "@/components/auth/auth-provider";
+import { AuthDivider } from "@/components/auth/auth-divider";
+import { GoogleAuthButton } from "@/components/auth/google-auth-button";
+import { EmailInput, PasswordInput } from "@/components/auth/auth-fields";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { FieldError } from "@/components/ui/field-error";
-import { EmailInput, PasswordInput } from "@/components/auth/auth-fields";
+import { joinUsSchema, type JoinUsValues } from "@/lib/validation";
 
-import { signUpSchema, type SignUpValues } from "@/lib/validation";
-import { cn } from "@/lib/utils";
-
-export function SignUpForm() {
+export function JoinUsForm() {
 	const router = useRouter();
+	const { signIn } = useAuth();
 	const {
 		register,
 		handleSubmit,
-		control,
 		formState: { errors, isSubmitting },
-	} = useForm<SignUpValues>({
-		resolver: zodResolver(signUpSchema),
+	} = useForm<JoinUsValues>({
+		resolver: zodResolver(joinUsSchema),
 		mode: "onTouched",
 		defaultValues: {
 			firstName: "",
@@ -35,12 +36,25 @@ export function SignUpForm() {
 		},
 	});
 
-	const onSubmit = handleSubmit(async () => {
-		router.push("/profile");
+	const onSubmit = handleSubmit(async (values) => {
+		signIn(
+			{
+				id: `vol-${Date.now()}`,
+				email: values.email,
+				firstName: values.firstName,
+				lastName: values.lastName,
+			},
+			{ isNewVolunteer: true },
+		);
+		router.push("/dashboard");
 	});
 
 	return (
 		<Card className="border-border/50 p-6 shadow-lg shadow-primary/5 sm:p-8">
+			<GoogleAuthButton mode="join" />
+
+			<AuthDivider label="Or join with email" />
+
 			<form className="space-y-5" onSubmit={onSubmit} noValidate>
 				<div className="grid gap-5 sm:grid-cols-2">
 					<div>
@@ -74,14 +88,14 @@ export function SignUpForm() {
 				</div>
 
 				<EmailInput
-					id="sign-up-email"
+					id="join-us-email"
 					placeholder="you@example.com"
 					error={errors.email?.message}
 					{...register("email")}
 				/>
 
 				<PasswordInput
-					id="sign-up-password"
+					id="join-us-password"
 					label="Password"
 					placeholder="At least 8 characters"
 					autoComplete="new-password"
@@ -90,7 +104,7 @@ export function SignUpForm() {
 				/>
 
 				<PasswordInput
-					id="confirm-password"
+					id="join-us-confirm-password"
 					label="Confirm Password"
 					placeholder="Re-enter your password"
 					autoComplete="new-password"
@@ -108,7 +122,7 @@ export function SignUpForm() {
 						/>
 						<span>
 							I agree to volunteer with Bloom Outreach and serve our community with
-							kindness, hope, and love..
+							kindness, hope, and love.
 						</span>
 					</label>
 					<FieldError message={errors.terms?.message} />
@@ -122,28 +136,19 @@ export function SignUpForm() {
 				>
 					{isSubmitting ? (
 						<>
-							Creating account...
+							Joining...
 							<Loader2 className="size-4 animate-spin" />
 						</>
 					) : (
 						<>
-							Create Account
+							Join Us
 							<UserPlus className="size-4" />
 						</>
 					)}
 				</Button>
 			</form>
 
-			<div className="relative my-8">
-				<div className="absolute inset-0 flex items-center">
-					<div className="w-full border-t border-border/60" />
-				</div>
-				<div className="relative flex justify-center">
-					<span className="bg-card px-3 text-xs uppercase tracking-wider text-muted-foreground">
-						Already a volunteer?
-					</span>
-				</div>
-			</div>
+			<AuthDivider label="Already part of the team?" />
 
 			<Button
 				asChild

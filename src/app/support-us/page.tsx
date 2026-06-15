@@ -67,7 +67,6 @@ export default function SupportUsPage() {
 				description="Your generosity fuels cleanups, equips volunteers, and helps us spread the gospel of Jesus in our community."
 				image={siteImages.pageHeaders.support}
 				eyebrow="Partner With Us"
-				size="large"
 			/>
 
 			<Section>

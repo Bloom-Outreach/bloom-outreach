@@ -13,8 +13,7 @@ export default function SignInPage() {
 		<AuthLayout
 			eyebrow="Welcome back"
 			title="Sign in to Bloom"
-			description="Sign in to Bloom
-      Manage your profile, RSVP to upcoming outreaches, and stay connected with your community."
+			description="Manage your profile, RSVP to upcoming outreaches, and stay connected with your volunteer community."
 			image={siteImages.auth.signIn}
 			imagePosition="left"
 		>

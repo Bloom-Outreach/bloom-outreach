@@ -14,8 +14,7 @@ interface PageHeaderProps {
 
 const sizeClasses = {
 	default: "py-24 md:py-32",
-	large:
-		"flex w-full min-h-[480px] items-center py-40 md:min-h-[580px] md:py-48 lg:min-h-[680px] lg:py-56",
+	large: "flex w-full min-h-[480px] items-center py-40 md:min-h-[580px] md:py-48 lg:min-h-[680px] lg:py-56",
 } as const;
 
 export function PageHeader({

@@ -84,6 +84,10 @@ export const signUpSchema = z
 
 export type SignUpValues = z.infer<typeof signUpSchema>;
 
+/** Volunteer account registration (Join Us page). */
+export const joinUsSchema = signUpSchema;
+export type JoinUsValues = SignUpValues;
+
 export const forgotPasswordSchema = z.object({
 	email: emailSchema,
 });

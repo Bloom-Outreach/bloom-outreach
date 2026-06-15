@@ -20,7 +20,6 @@ export default function CalendarPage() {
 				description="Find an upcoming event and sign up to serve. Your sign-up helps us know who's available."
 				image={siteImages.pageHeaders.calendar}
 				eyebrow="Calendar"
-				size="large"
 			/>
 
 			<Section>

@@ -39,7 +39,6 @@ export default function ContactPage() {
 				description="We'd love to hear from you. Whether you want to volunteer, support us, or simply learn more — reach out anytime."
 				image="/images/contact/contact-hero.webp"
 				eyebrow="Get In Touch"
-				size="large"
 			/>
 
 			<Section>

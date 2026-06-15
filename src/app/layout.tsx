@@ -3,6 +3,7 @@ import { DM_Sans, Fraunces, Geist_Mono } from "next/font/google";
 import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
 import { ThemeProvider } from "@/components/theme-provider";
+import { AuthProvider } from "@/components/auth/auth-provider";
 import { siteConfig } from "@/lib/constants";
 import "./globals.css";
 
@@ -44,9 +45,11 @@ export default function RootLayout({
     >
       <body className="flex min-h-full flex-col">
         <ThemeProvider>
-          <Navbar />
-          <main className="flex-1">{children}</main>
-          <Footer />
+          <AuthProvider>
+            <Navbar />
+            <main className="flex-1">{children}</main>
+            <Footer />
+          </AuthProvider>
         </ThemeProvider>
       </body>
     </html>
