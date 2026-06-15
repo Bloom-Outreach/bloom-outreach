@@ -37,7 +37,7 @@ export default function ContactPage() {
 			<PageHeader
 				title="Contact Us"
 				description="We'd love to hear from you. Whether you want to volunteer, support us, or simply learn more — reach out anytime."
-				image={siteImages.pageHeaders.contact}
+				image="/images/contact/contact-hero.webp"
 				eyebrow="Get In Touch"
 			/>
 

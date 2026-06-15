@@ -96,15 +96,18 @@ export function HeroSection() {
 							transition={{ duration: 0.7, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
 							className="relative"
 						>
-							<div className="relative aspect-[4/5] overflow-hidden rounded-3xl shadow-2xl ring-1 ring-white/20 sm:aspect-[5/6] lg:aspect-[4/5]">
+							<div
+								className="relative aspect-[4/5] overflow-hidden rounded-3xl
+    shadow-2xl ring-1 ring-white/20 sm:aspect-[5/6] lg:aspect-[4/5]"
+							>
 								<Image
-									src={siteImages.hero.src}
-									alt={siteImages.hero.alt}
-									width={siteImages.hero.width}
-									height={siteImages.hero.height}
+									src="/images/hero/bloom-volunteer.webp"
+									alt="Bloom Volunteer"
+									width={1365}
+									height={910}
 									priority
 									sizes="(max-width: 1024px) 100vw, 50vw"
-									className="h-full w-full object-cover"
+									className="w-full h-full object-cover object-top"
 								/>
 								<div className="absolute inset-0 bg-gradient-to-t from-bloom-wine-deep/70 via-transparent to-transparent" />
 							</div>

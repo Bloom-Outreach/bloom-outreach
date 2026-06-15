@@ -46,6 +46,7 @@ export default function GetInvolvedPage() {
         description="Volunteer with us, join a cleanup, or help spread the word of Jesus. Discover how you can be part of Bloom Outreach."
         image={siteImages.pageHeaders.getInvolved}
         eyebrow="Join the Team"
+        size="large"
       />
 
       <Section>

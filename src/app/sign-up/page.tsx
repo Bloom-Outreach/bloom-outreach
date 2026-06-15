@@ -16,11 +16,6 @@ export default function SignUpPage() {
 			description="Create an account to volunteer, join cleanups, and spread the word with us."
 			image={siteImages.auth.signUp}
 			imagePosition="right"
-			testimonial={{
-				quote: "Bloom showed me that cleaning a street and sharing the gospel go hand in hand. Simple acts, eternal impact.",
-				author: "David Okonkwo",
-				role: "Volunteer & Witness",
-			}}
 		>
 			<SignUpForm />
 		</AuthLayout>
