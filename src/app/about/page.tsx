@@ -52,6 +52,7 @@ export default function AboutPage() {
 				description="We volunteer together, clean our community, and spread the word of Jesus. That's who we are — nothing more, nothing less."
 				image={siteImages.pageHeaders.about}
 				eyebrow="Our Story"
+				size="large"
 			/>
 
 			<Section>

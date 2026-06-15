@@ -35,7 +35,7 @@ export function BackgroundImage({
 				)}
 			/>
 			<div className="bloom-pattern absolute inset-0 opacity-20" />
-			<div className="relative z-10">{children}</div>
+			<div className="relative z-10 w-full">{children}</div>
 		</div>
 	);
 }
